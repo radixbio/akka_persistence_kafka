@@ -23,6 +23,7 @@ object Dependencies {
     version := "0.0.1-SNAPSHOT",
     scalacOptions += "-Ypartial-unification",
     resolvers += Resolver.sonatypeRepo("releases"),
+    resolvers += "io.confluent" at "https://packages.confluent.io/maven/",
     addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3")
   )
 
@@ -40,7 +41,7 @@ object Dependencies {
       "com.typesafe.akka"       %% "akka-persistence-tck"           % Versions.akka,
       "com.typesafe.akka"       %% "akka-persistence-query"         % Versions.akka,
       "io.confluent"            %  "kafka-avro-serializer"          % Versions.avroSerializer,
-      "org.typelevel"           %% "cats-core"                      % "2.0.0-RC2",
+      "org.typelevel"           %% "cats-core"                      % "2.0.0",
       "org.scalaz"              %% "scalaz-core"                    % "7.2.28",
       "com.sksamuel.avro4s"     %% "avro4s-core"                    % "3.0.1",
       "com.github.ghik"         %  "silencer-lib"                   % "1.4.3" cross CrossVersion.full,
