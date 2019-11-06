@@ -44,7 +44,8 @@ object Dependencies {
       "org.typelevel"           %% "cats-core"                      % "2.0.0",
       "org.scalaz"              %% "scalaz-core"                    % "7.2.28",
       "com.sksamuel.avro4s"     %% "avro4s-core"                    % "3.0.1",
-      "com.github.ghik"         %  "silencer-lib"                   % "1.4.3" cross CrossVersion.full,
+       compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.4.4" cross CrossVersion.full),
+      "com.github.ghik"         % "silencer-lib"                   % "1.4.4" % Provided cross CrossVersion.full,
       "io.github.embeddedkafka" %% "embedded-kafka-schema-registry" % "5.3.0" % "test"
     )
   )
