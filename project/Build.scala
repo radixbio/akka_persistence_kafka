@@ -9,7 +9,7 @@ import scalajscrossproject.ScalaJSCrossPlugin.autoImport._
 
 object Versions {
   val scala          = "2.12.9"
-  val akka           = "2.5.25"
+  val akka           = "2.5.26"
   val kafka          = "2.3.0"
   val avroSerializer = "5.3.0"
 }
