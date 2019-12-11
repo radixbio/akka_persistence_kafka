@@ -62,5 +62,5 @@ scala_binary(
     srcs = ["src/test/scala/Test.scala"],
     main_class = "com.radix.shared.persistence.test.Test",
     resources = ["src/test/resources/application.conf"],
-    deps = [":persistence"],
+    deps = [":persistence", "//3rdparty/jvm/com/propensive:magnolia"],
 )
