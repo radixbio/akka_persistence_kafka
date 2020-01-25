@@ -50,6 +50,7 @@ scala_test(
         "src/test/scala/Test.scala",
     ],
     resources = ["src/test/resources/application.conf"],
+    tags = ["exclusive"],
     deps = [
         "//3rdparty/jvm/com/typesafe/akka:akka_persistence_tck",
         "//3rdparty/jvm/io/github/embeddedkafka:embedded_kafka_schema_registry",
