@@ -37,6 +37,7 @@ scala_test(
     ],
     resources = ["src/test/resources/application.conf"],
     deps = [
+        "//3rdparty/jvm/com/typesafe/akka:akka_cluster_typed",
         "//3rdparty/jvm/com/typesafe/akka:akka_persistence_tck",
         "//3rdparty/jvm/io/github/embeddedkafka:embedded_kafka_schema_registry",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
@@ -52,6 +53,7 @@ scala_test(
     resources = ["src/test/resources/application.conf"],
     tags = ["exclusive"],
     deps = [
+        "//3rdparty/jvm/com/typesafe/akka:akka_cluster_typed",
         "//3rdparty/jvm/com/typesafe/akka:akka_persistence_tck",
         "//3rdparty/jvm/io/github/embeddedkafka:embedded_kafka_schema_registry",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
@@ -63,5 +65,21 @@ scala_binary(
     srcs = ["src/test/scala/Test.scala"],
     main_class = "com.radix.shared.persistence.test.Test",
     resources = ["src/test/resources/application.conf"],
-    deps = [":persistence", "//3rdparty/jvm/com/propensive:magnolia"],
+    deps = [
+        ":persistence",
+        "//3rdparty/jvm/com/propensive:magnolia",
+    ],
+)
+
+scala_test(
+    name = "avro-serialization-test",
+    srcs = ["src/test/scala/SerializationTest.scala"],
+    deps = [
+        "//3rdparty/jvm/com/sksamuel/avro4s:avro4s_core",
+        "//3rdparty/jvm/com/typesafe/akka:akka_actor_testkit_typed",
+        "//3rdparty/jvm/com/typesafe/akka:akka_cluster_typed",
+        "//3rdparty/jvm/com/typesafe/akka:akka_testkit",
+        "//external:jar/com/typesafe/config",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
+    ],
 )
