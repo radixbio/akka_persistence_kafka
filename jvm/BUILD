@@ -21,37 +21,15 @@ scala_library(
     ],
 )
 
-scala_test_suite(
-    name = "akka-persistence-tck",
-    deps = [
-        "persistence-snapshot-tck",
-        ":persistence-journal-tck",
-    ],
-)
 
 scala_test(
-    name = "persistence-journal-tck",
+    name = "akka-persistence-tck",
     srcs = [
         "src/test/scala/KafkaJournalTest.scala",
-        "src/test/scala/Test.scala",
-    ],
-    resources = ["src/test/resources/application.conf"],
-    deps = [
-        "//3rdparty/jvm/com/typesafe/akka:akka_cluster_typed",
-        "//3rdparty/jvm/com/typesafe/akka:akka_persistence_tck",
-        "//3rdparty/jvm/io/github/embeddedkafka:embedded_kafka_schema_registry",
-        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
-    ],
-)
-
-scala_test(
-    name = "persistence-snapshot-tck",
-    srcs = [
         "src/test/scala/KafkaSnapshotStoreTest.scala",
         "src/test/scala/Test.scala",
     ],
     resources = ["src/test/resources/application.conf"],
-    tags = ["exclusive"],
     deps = [
         "//3rdparty/jvm/com/typesafe/akka:akka_cluster_typed",
         "//3rdparty/jvm/com/typesafe/akka:akka_persistence_tck",
@@ -59,6 +37,8 @@ scala_test(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
     ],
 )
+
+
 
 scala_binary(
     name = "test_binary",

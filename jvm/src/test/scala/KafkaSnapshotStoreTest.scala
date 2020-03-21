@@ -9,7 +9,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class KafkaSnapshotStoreTest
-  extends SnapshotStoreSpec(ConfigFactory.load)
+  extends SnapshotStoreSpec(ConfigFactory.load.withValue("akka.remote.netty.tcp.port", ConfigFactory.parseString("{port: 2555}").getValue("port")))
     with EmbeddedKafka {
 
   override def supportsSerialization: CapabilityFlag = CapabilityFlag.off
