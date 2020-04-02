@@ -14,13 +14,22 @@ scala_library(
     exports = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-query",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/gi/uservice:gi-uservice-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/hmrpp/uservice:hmrpp-uservice-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/sensors/elemental:elemental-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/squants:squants-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/util/prism:prism-serialization",
     ],
     deps = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-query",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/gi/uservice:gi-uservice-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/hmrpp/uservice:hmrpp-uservice-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/sensors/elemental:elemental-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/squants:squants-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/util/prism:prism-serialization",
     ],
 )
-
 
 scala_test(
     name = "akka-persistence-tck",
@@ -37,8 +46,6 @@ scala_test(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
     ],
 )
-
-
 
 scala_binary(
     name = "test_binary",

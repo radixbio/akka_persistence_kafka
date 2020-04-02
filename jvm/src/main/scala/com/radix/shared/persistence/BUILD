@@ -16,6 +16,7 @@ scala_library(
     exports = [
         "//3rdparty/jvm/com/sksamuel/avro4s:avro4s_core",
         "//3rdparty/jvm/com/typesafe/akka:akka_actor",
+        "//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
         "//3rdparty/jvm/com/typesafe/akka:akka_distributed_data",
         "//3rdparty/jvm/com/typesafe/akka:akka_persistence",
         "//3rdparty/jvm/com/typesafe/akka:akka_stream",
