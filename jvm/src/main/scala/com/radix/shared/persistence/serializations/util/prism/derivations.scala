@@ -8,15 +8,18 @@ import com.sksamuel.avro4s.{AvroSchema, Decoder, DefaultFieldMapper, Encoder, Fi
 import matryoshka._
 import matryoshka.data.Fix
 import matryoshka.implicits._
+import io.circe.parser.parse
 import org.apache.avro.{Schema, SchemaBuilder}
 import org.apache.avro.generic.{GenericData, GenericRecord}
 import org.apache.avro.util.Utf8
 import scalaz.Functor
 import ujson.{Js, read}
+
 import scala.collection.JavaConverters._
 import com.radix.shared.persistence.serializations.squants.schemas._
 import com.radix.shared.util.prism._
 import com.radix.shared.util.prism.implicits._
+import squants.space.Volume
 
 object derivations {
   implicit val fieldMapper: FieldMapper = DefaultFieldMapper
@@ -76,87 +79,52 @@ object derivations {
   Avro does not allow named unions (https://issues.apache.org/jira/browse/AVRO-248).
   Using the approach in AVRO-530 as a temporary workaround, we reorder the schema to have no forward dependencies
   TODO this does not support multiple recursive calls, only one
+  NOTE: this code doesn't do any reordering besides the fix rollup. Move your recursive type to as far to the end of your
+  parameter list if this is giving you issues at runtime.
+  it is possible to generalize this, but it was easier to reorder the AST itself in the case that wrote this.
+  TODO add support for field reordering to respect rolled-up field reference ordering
    */
   implicit def SchemaForFix[F[_]: Functor](implicit ev: SchemaFor[F[REPLACE.type]]): SchemaFor[Fix[F]] = {
     val replaceNamespace = REPLACE.getClass.getName.split('$').head
-    val replaceName      = REPLACE.getClass.getSimpleName.replaceAllLiterally("$", "")
-    val recordsInF       = read(SchemaFor[F[REPLACE.type]].schema(fieldMapper).toString).arr
-    val names            = recordsInF.toList.map(_("name").str).map(_.toString)
-    val namespaces       = recordsInF.toList.map(_("namespace").str).map(_.toString)
-    //One of the forms REPLACE can take, since it can get serialized as a case class by avro4s for some reason
+    val replaceName = REPLACE.getClass.getSimpleName.replaceAllLiterally("$", "")
+    val in = SchemaFor[F[REPLACE.type]].schema(fieldMapper).toString
+
+    val json = parse(in).toOption.get.asArray.get
+    val names = json.map(_.hcursor.downField("name").as[String].toOption.get)
+    val namespaces = json.map(_.hcursor.downField("namespace").as[String].toOption.get)
+
+    //One of the forms REPLACE can take, since it can get serialized as a case class by avro4s for some reason when it's in a list-like type
     val replaceStr =
       s"""{"type":"record","name":"$replaceName","namespace":"$replaceNamespace","fields":[]}""".stripMargin
     //The straightforward type replace
     val replaceStr2 =
       s""""$replaceNamespace.$replaceName"""".stripMargin
-    def replacePlaceholderTermsInFieldsWithUnion(inputObject: Js, accum: Js): Js = {
-      // To figure out where to splice into the list
-      val lastName = names.indexOf(accum("name").str)
-      // package up the union type, with things to be declared, the struct defn, and then defns from inside the struct defn
-      val endDefns = accum.toString + ",\"" + names
-        .drop(lastName + 1)
-        .zip(namespaces)
-        .map(tup => tup._2 + "." + tup._1)
-        .mkString("\",\"")
-      val definedSoFar = endDefns match {
-        case x if x.endsWith(",\"") =>
-          "[\"" + names
-            .take(lastName)
-            .zip(namespaces)
-            .map(tup => tup._2 + "." + tup._1)
-            .mkString("\",\"") + "\"," + accum.toString + "]"
-        case els =>
-          "[\"" + names
-            .take(lastName)
-            .zip(namespaces)
-            .map(tup => tup._2 + "." + tup._1)
-            .mkString("\",\"") + "\"," + els + "\"]"
-      }
+    val replacement = namespaces.zip(names).map(x => s"${x._1}.${x._2}").mkString("[\"", "\",\"", "\"]")
 
-      val replacementArr = inputObject("fields").arr.toList.foldLeft(List.empty[Js.Value])({
-        case (orderedFieldTypes, field) => {
-          val replacement =
-            field.toString.replaceAllLiterally(replaceStr, definedSoFar).replaceAllLiterally(replaceStr2, definedSoFar)
-          if (replacement.contains(definedSoFar)) {
-            // Add it to the end. it may have data dependencies in other fields
-            orderedFieldTypes ::: List(read(replacement))
-          } else {
-            //Add it to the beginning, there shouldn't be any data dependencies on non-initialized types
-            List(read(replacement)) ::: orderedFieldTypes
-          }
-        }
-      })
-      replacementArr.filter(_.toString.startsWith("\"")).toSet
-      //upickle/ujson is mutable
-      inputObject("fields") = replacementArr
-      inputObject
-    }
-    val reorganizedSchema = recordsInF.toList.init.foldRight(
-      read(
-        recordsInF.last.toString
-          .replaceAllLiterally(replaceStr, Js.JsonableSeq(names).toString)
-          .replaceAllLiterally(replaceStr2, Js.JsonableSeq(names).toString)))({
-      case (objectToUnion, accumulatedSchema) =>
-        replacePlaceholderTermsInFieldsWithUnion(objectToUnion, accumulatedSchema)
 
-    })
-    val topNodeName = reorganizedSchema("name").str
-    val result =
-      Js.JsonableSeq(
-        List(reorganizedSchema) ::: names
-          .zip(namespaces)
-          .filterNot(_._1 == topNodeName)
-          // fully qualify all names
-          .map(tup => Js.Str(tup._2 + "." + tup._1)))
-        .toString
-        .replaceAllLiterally(s"__$replaceName", "")
 
+    val lastFullReplaced =
+      json.last.noSpaces.replaceAllLiterally(replaceStr, replacement).replaceAllLiterally(replaceStr2, replacement)
+    val lastName = "\"" + namespaces.last + "." + names.last + "\""
+    val result = json.init.foldRight((lastFullReplaced, lastName))({
+      case (json, (accumSchema, lastname)) =>
+        (json.noSpaces
+          .replaceAllLiterally(replaceStr, replacement)
+          .replaceAllLiterally(replaceStr2, replacement)
+          .replaceFirst(lastname, accumSchema),
+          "\"" + json.hcursor.downField("namespace").as[String].toOption.get + "." + json.hcursor
+            .downField("name")
+            .as[String]
+            .toOption
+            .get + "\"")
+    })._1
+    val toplevelunion = "[" + result + ",\"" + namespaces.tail.zip(names.tail).map(x => s"${x._1}.${x._2}").mkString("", "\",\"", "\"]")
     new SchemaFor[Fix[F]] {
       override def schema(fieldMapper: FieldMapper): Schema =
-        new Schema.Parser().setValidate(true).parse(result)
+        new Schema.Parser().setValidate(true).parse(toplevelunion.replaceAllLiterally(s"__$replaceName", ""))
     }
-
   }
+
 
   /**
    * There's probably a much nicer way to do this given labelledGeneric. TODO explore this to generalize
@@ -178,16 +146,19 @@ object derivations {
           case Plate(_, props, _, _) => {
             record.put("props", Encoder[PlatePropertiesUnits].encode(props, AvroSchema[PlatePropertiesUnits], fieldMapper))
           }
-          case Well(_, _, id, props, _) => {
+          case Well(_,  id, props, _, _) => {
             record.put("id", Encoder[WellID].encode(id, SchemaFor[WellID].schema(fieldMapper),fieldMapper))
             record.put("props", Encoder[WellPropertiesUnits].encode(props, AvroSchema[WellPropertiesUnits], fieldMapper))
           }
-          case HeatableWell(_, _, id, props, tempProps, _) => {
+          case HeatableWell(_, id, props, tempProps, _, _) => {
             record.put("id", Encoder[WellID].encode(id, SchemaFor[WellID].schema(fieldMapper), fieldMapper))
             record.put("props", Encoder[WellPropertiesUnits].encode(props, AvroSchema[WellPropertiesUnits],fieldMapper))
             record.put("tempProps", Encoder[WellTempProperties].encode(tempProps, AvroSchema[WellTempProperties], fieldMapper))
           }
+          case Fluid(_, volume, _, _) => {
+            record.put("volume", Encoder[Volume].encode(volume, AvroSchema[Volume], fieldMapper))
 
+          }
           case _ => Unit
         }
         record
@@ -199,18 +170,21 @@ object derivations {
         val offset   = Decoder[Offset].decode(record.get("offset"), AvroSchema[Offset], fieldMapper)
         val contains = record.get("contains").asInstanceOf[java.util.Collection[GenericRecord]].asScala.toList
         record.getSchema.getName match {
-          case "Fluid" => new Fluid[GenericRecord](offset, contains, uuid)
+          case "Fluid" => {
+            val vol = Decoder[Volume].decode(record.get("volume"), AvroSchema[Volume], fieldMapper)
+            new Fluid[GenericRecord](offset, volume = vol, contains, uuid)
+          }
           case "Well" => {
             val wid   = Decoder[WellID].decode(record.get("id"), AvroSchema[WellID], fieldMapper)
             val props = Decoder[WellPropertiesUnits].decode(record.get("props"), AvroSchema[WellPropertiesUnits], fieldMapper)
-            new Well[GenericRecord](offset, contains, wid, props, uuid)
+            new Well[GenericRecord](offset, wid, props, contains, uuid)
           }
           case "HeatableWell" => {
             val wid   = Decoder[WellID].decode(record.get("id"), AvroSchema[WellID], fieldMapper)
             val props = Decoder[WellPropertiesUnits].decode(record.get("props"), AvroSchema[WellPropertiesUnits], fieldMapper)
             val tempProps =
               Decoder[WellTempProperties].decode(record.get("tempProps"), AvroSchema[WellTempProperties], fieldMapper)
-            new HeatableWell[GenericRecord](offset, contains, wid, props, tempProps, uuid)
+            new HeatableWell[GenericRecord](offset, wid, props, tempProps, contains, uuid)
           }
           case "Plate" => {
             val props =
@@ -227,6 +201,49 @@ object derivations {
         val record = value.asInstanceOf[GenericRecord]
         record.ana[Fix[Container]](decoderCoalgebra)
       }
+    }
+
+    implicit def AvroPath(implicit ev: SchemaFor[Fix[Path]]): Encoder[Fix[Path]] with Decoder[Fix[Path]] = {
+    new Encoder[Fix[Path]] with Decoder[Fix[Path]] {
+
+      private[this] val arraySchema = Schema.createArray(ev.schema(fieldMapper))
+      private[this] val encoderAlg: Algebra[Path, AnyRef] = path => {
+        val recordSchema = ev.schema(fieldMapper).getTypes.get(ev.schema(fieldMapper).getIndexNamed(path.getClass.getName))
+        val record       = new GenericData.Record(recordSchema)
+        path match {
+          case Take(which, next) =>
+            record.put("which", Encoder[Fix[Container]].encode(which, SchemaFor[Fix[Container]].schema(fieldMapper), fieldMapper))
+            record.put("next", next)
+
+          case Terminal(next) =>
+            record.put("next", Encoder[Fix[Container]].encode(next, SchemaFor[Fix[Container]].schema(fieldMapper), fieldMapper))
+          case _ => Unit
+        }
+        record
+      }
+
+      private[this] val decoderCoalgebra: Coalgebra[Path, GenericRecord] = record => {
+
+        record.getSchema.getName match {
+          case "Take" => {
+            val next = record.get("next").asInstanceOf[GenericRecord]
+            val which = Decoder[Fix[Container]].decode(record.get("which"), AvroSchema[Fix[Container]], fieldMapper)
+            new Take[GenericRecord](which, next)
+          }
+          case "Terminal" => {
+            val next = Decoder[Fix[Container]].decode(record.get("next"), AvroSchema[Fix[Container]], fieldMapper)
+            new Terminal[GenericRecord](next)
+          }
+        }
+      }
+
+
+      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): Fix[Path] = {
+        val record = value.asInstanceOf[GenericRecord]
+        record.ana[Fix[Path]](decoderCoalgebra)
+      }
+      override def encode(t: Fix[Path], schema: Schema, fieldMapper: FieldMapper): AnyRef = t.cata(encoderAlg)
+    }
     }
 
 
