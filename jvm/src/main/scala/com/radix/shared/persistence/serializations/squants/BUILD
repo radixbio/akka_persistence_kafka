@@ -13,11 +13,11 @@ scala_library(
         "schemas.scala",
     ],
     exports = [
-        "//3rdparty/jvm/org/typelevel:squants",
+        "@third_party//3rdparty/jvm/org/typelevel:squants",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
     ],
     deps = [
-        "//3rdparty/jvm/org/typelevel:squants",
+        "@third_party//3rdparty/jvm/org/typelevel:squants",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
     ],
 )
