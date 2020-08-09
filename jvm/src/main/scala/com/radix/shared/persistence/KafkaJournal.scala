@@ -24,6 +24,7 @@ import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDe
 import scalaz.Scalaz._
 import akka.pattern.ask
 import akka.util.Timeout
+import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.{ConsumerConfig, RetriableCommitFailedException}
 import org.apache.kafka.common.TopicPartition
 
@@ -105,7 +106,24 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal
         }).sequenceU // fail the whole set if serialization fails
 
         val kafkaObjectToProducerRecord: ((String, KafkaJournalKey, Object)) => ProducerRecord[String, Object] = {
-          case (topic, key, obj) => new ProducerRecord[String, Object](topic, 0, key.toString(), obj)
+          case (topic, key, obj) => {
+          //uncomment to autostore timestamp from the messages. Might be useful for prismuservice in the future?
+//                      val genRecord = obj.asInstanceOf[GenericRecord]
+//                      val schema = genRecord.getSchema
+//                      val hasTimestamp = schema.getFields.contains("timestamp") //Assume this is a some or none
+//                      if (hasTimestamp){
+//                        val timeStamp = genRecord.get("timestamp") match {
+//                          case None => ??? //TODO getTimeStamp
+//                          case a => a
+//                        }
+//                        genRecord.put("timestamp", timeStamp)
+//                        new ProducerRecord[String, Object](topic, 0, key.toString(), genRecord.asInstanceOf[Object])
+//                      }
+//                      else{
+                        new ProducerRecord[String, Object](topic, 0, key.toString(), obj)
+//                      }
+
+          }
         }
 
         kafkaObjectsE match {
@@ -190,7 +208,6 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal
     val topic = persistenceId + KafkaJournal.journalPostfix
     val partition = new TopicPartition(topic, 0)
     val subscription = Subscriptions.assignmentWithOffset(partition, 0)
-
     for {
       endOffset <- getEndOffset(partition)
       result <- Consumer
@@ -210,7 +227,23 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal
         .map(_.map {
           case (key, record) =>
             Console.println(s"replaying $record")
-            val deserializedObjectO = AnySerializedObjectToAvro(serializationExtension, key.serializerId, key.manifest, record.value)
+
+            ///// TODO should we uncomment the following to have support for timestamps during replay?
+//            record.value match {
+//              case genRecord: GenericRecord =>
+//                val schema = genRecord.getSchema
+//                val hasTimestamp = schema.getField("timestamp") != null
+//                if (hasTimestamp) {
+//                  val timeStamp = genRecord.get("timestamp") match {
+//                    case None => record.timestamp
+//                    case null => record.timestamp
+//                    case a => a
+//                  }
+//                  genRecord.put("timestamp", timeStamp)
+//                }
+//              case _ => ()
+//            }
+            val deserializedObjectO = AnySerializedObjectToAvro(serializationExtension, key.serializerId, key.manifest, record.value) //TODO check if the schema contains a timestamp and do tehe reverse
             val (obj, isDeleted) = deserializedObjectO match {
               case None => (null, true)
               case Some(obj) => (obj, false)
