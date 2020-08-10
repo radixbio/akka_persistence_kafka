@@ -2,15 +2,7 @@ package com.radix.shared.persistence.serializations.util.prism
 
 import java.util.UUID
 
-import com.radix.shared.defs.pipettingrobot.OpentronsPlateModel.{
-  OriginOffset,
-  OriginOffsetUnits,
-  PlatePropertiesUnits,
-  WellID,
-  WellProperties,
-  WellPropertiesUnits,
-  WellsU
-}
+import com.radix.shared.defs.pipettingrobot.OpentronsPlateModel.{OriginOffsetUnits, PipetteTipData, PlatePropertiesUnits, WellID, WellPropertiesUnits, WellsU, OriginOffset, WellProperties}
 import com.radix.shared.util.prism._
 import com.sksamuel.avro4s.{AvroSchema, Decoder, DefaultFieldMapper, Encoder, FieldMapper, SchemaFor}
 import matryoshka._
@@ -33,8 +25,6 @@ import squants.space.{Millilitres, Volume}
 import scala.collection.JavaConverters._
 import java.util
 
-//import cats.Eval
-//import cats.free.Cofree
 import com.radix.shared.util.prism.rpc.PrismProtocol.{PrismMetadata, PrismWithMetadata}
 object derivations {
   implicit val fieldMapper: FieldMapper = DefaultFieldMapper
@@ -269,8 +259,13 @@ object derivations {
                                 tailRecord.put(
                                   "volume",
                                   Encoder[Volume].encode(volume, AvroSchema[Volume], fieldMapper))
+                              }
+                              case PipetteTip(_, id, props, _, _) => {
+                                tailRecord.put("id", Encoder[WellID].encode(id, SchemaFor[WellID].schema(fieldMapper), fieldMapper))
+                                tailRecord.put("props", Encoder[PipetteTipData].encode(props, SchemaFor[PipetteTipData].schema(fieldMapper), fieldMapper))
+                              }
 
-            }
+
             case _ => Unit
           }
           record.put("tail", tailRecord)
@@ -355,6 +350,16 @@ object derivations {
             case "Robot" => new Robot[GenericRecord](offset, contains, uuid)
             case "World" => new World[GenericRecord](offset, contains, uuid)
             case "Shim" => new Shim[GenericRecord](offset, contains, uuid)
+            case "PipetteTip" => {
+              val wid = Decoder[WellID].decode(tailRecord.get("id"),
+                AvroSchema[WellID],
+                fieldMapper)
+              val props = Decoder[PipetteTipData].decode(
+                tailRecord.get("props"),
+                AvroSchema[PipetteTipData],
+                fieldMapper)
+              new PipetteTip[GenericRecord](offset, wid, props, contains, uuid)
+            }
           }
           tail
         }
@@ -432,6 +437,17 @@ object derivations {
               Encoder[Volume].encode(volume, AvroSchema[Volume], fieldMapper))
 
           }
+          case PipetteTip(_, id, props, _, _) => {
+            record.put(
+              "id",
+              Encoder[WellID].encode(id,
+                SchemaFor[WellID].schema(fieldMapper),
+                fieldMapper))
+            record.put(
+              "props",
+              Encoder[PipetteTipData]
+                .encode(props, AvroSchema[PipetteTipData], fieldMapper))
+          }
           case _ => Unit
         }
         record
@@ -491,6 +507,16 @@ object derivations {
                                               contains,
                                               uuid)
             }
+            case "PipetteTip" => {
+              val wid = Decoder[WellID].decode(record.get("id"),
+                                               AvroSchema[WellID],
+                                               fieldMapper)
+              val props = Decoder[PipetteTipData].decode(
+                record.get("props"),
+                AvroSchema[PipetteTipData],
+                fieldMapper)
+              new PipetteTip[GenericRecord](offset, wid, props, contains, uuid)
+          }
             case "Plate" => {
               val props =
                 Decoder[PlatePropertiesUnits].decode(
