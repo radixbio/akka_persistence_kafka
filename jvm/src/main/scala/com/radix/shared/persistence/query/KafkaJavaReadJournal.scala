@@ -5,8 +5,8 @@ import akka.persistence.query.javadsl
 import akka.stream.javadsl.Source
 
 class KafkaJavaReadJournal(kafkaScalaReadJournal: KafkaScalaReadJournal)
-  extends javadsl.ReadJournal
-  with javadsl.CurrentPersistenceIdsQuery {
+    extends javadsl.ReadJournal
+    with javadsl.CurrentPersistenceIdsQuery {
 
   override def currentPersistenceIds(): Source[String, NotUsed] = kafkaScalaReadJournal.currentPersistenceIds().asJava
 }

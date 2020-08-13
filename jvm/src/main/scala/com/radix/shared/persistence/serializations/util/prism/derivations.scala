@@ -2,7 +2,7 @@ package com.radix.shared.persistence.serializations.util.prism
 
 import java.util.UUID
 
-import com.radix.shared.defs.pipettingrobot.OpentronsPlateModel.{OriginOffsetUnits, PipetteTipData, PlatePropertiesUnits, WellID, WellPropertiesUnits, WellsU, OriginOffset, WellProperties}
+import com.radix.shared.defs.pipettingrobot.OpentronsPlateModel.{OriginOffset, OriginOffsetUnits, PipetteTipData, PlatePropertiesUnits, WellID, WellProperties, WellPropertiesUnits, WellsU}
 import com.radix.shared.util.prism._
 import com.sksamuel.avro4s.{AvroSchema, Decoder, DefaultFieldMapper, Encoder, FieldMapper, SchemaFor}
 import matryoshka._
@@ -13,8 +13,8 @@ import io.circe.parser.parse
 import org.apache.avro.{Schema, SchemaBuilder}
 import org.apache.avro.generic.{GenericData, GenericRecord}
 import org.apache.avro.util.Utf8
-import scalaz.{Functor, Cofree}
-import ujson.{Js, read}
+import scalaz.{Cofree, Functor}
+import ujson.{read, Js}
 
 import scala.collection.JavaConverters._
 import com.radix.shared.persistence.serializations.squants.schemas._
@@ -29,41 +29,36 @@ import com.radix.shared.util.prism.rpc.PrismProtocol.{PrismMetadata, PrismWithMe
 object derivations {
   implicit val fieldMapper: FieldMapper = DefaultFieldMapper
 
-  implicit def mapSchemaForWellID[V](
-      implicit schemaFor: SchemaFor[V]): SchemaFor[Map[WellID, V]] = {
+  implicit def mapSchemaForWellID[V](implicit schemaFor: SchemaFor[V]): SchemaFor[Map[WellID, V]] = {
     new SchemaFor[Map[WellID, V]] {
       override def schema(fieldMapper: FieldMapper): Schema =
         SchemaBuilder.map().values(schemaFor.schema(fieldMapper))
     }
   }
-  implicit def mapDecoderWellID[T](
-      implicit valueDecoder: Decoder[T]): Decoder[Map[WellID, T]] =
+  implicit def mapDecoderWellID[T](implicit valueDecoder: Decoder[T]): Decoder[Map[WellID, T]] =
     new Decoder[Map[WellID, T]] {
 
-      override def decode(value: Any,
-                          schema: Schema,
-                          fieldMapper: FieldMapper): Map[WellID, T] =
+      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): Map[WellID, T] =
         value match {
           case map: java.util.Map[_, _] =>
             map.asScala.toMap.map {
-              case (k, v) => WellID(
-                implicitly[Decoder[String]]
-                  .decode(k, schema, fieldMapper)) -> valueDecoder.decode(
-                  v,
-                  schema.getValueType,
-                  fieldMapper)
+              case (k, v) =>
+                WellID(
+                  implicitly[Decoder[String]]
+                    .decode(k, schema, fieldMapper)
+                ) -> valueDecoder.decode(v, schema.getValueType, fieldMapper)
             }
           case other => sys.error("Unsupported map " + other)
         }
     }
-  implicit def mapEncoderWellID[V](
-      implicit encoder: Encoder[V]): Encoder[Map[WellID, V]] =
+  implicit def mapEncoderWellID[V](implicit encoder: Encoder[V]): Encoder[Map[WellID, V]] =
     new Encoder[Map[WellID, V]] {
 
       override def encode(
-          map: Map[WellID, V],
-          schema: Schema,
-          fieldMapper: FieldMapper): java.util.Map[String, AnyRef] = {
+        map: Map[WellID, V],
+        schema: Schema,
+        fieldMapper: FieldMapper
+      ): java.util.Map[String, AnyRef] = {
         require(schema != null)
         val java = new util.HashMap[String, AnyRef]
         map.foreach {
@@ -87,8 +82,7 @@ object derivations {
   it is possible to generalize this, but it was easier to reorder the AST itself in the case that wrote this.
   TODO add support for field reordering to respect rolled-up field reference ordering
    */
-  implicit def SchemaForFix[F[_]: Functor](
-      implicit ev: SchemaFor[F[REPLACE.type]]): SchemaFor[Fix[F]] = {
+  implicit def SchemaForFix[F[_]: Functor](implicit ev: SchemaFor[F[REPLACE.type]]): SchemaFor[Fix[F]] = {
     val replaceNamespace = REPLACE.getClass.getName.split('$').head
     val replaceName =
       REPLACE.getClass.getSimpleName.replaceAllLiterally("$", "")
@@ -118,19 +112,21 @@ object derivations {
     val result = json.init
       .foldRight((lastFullReplaced, lastName))({
         case (json, (accumSchema, lastname)) =>
-          (json.noSpaces
-             .replaceAllLiterally(replaceStr, replacement)
-             .replaceAllLiterally(replaceStr2, replacement)
-             .replaceFirst(lastname, accumSchema),
-           "\"" + json.hcursor
-             .downField("namespace")
-             .as[String]
-             .toOption
-             .get + "." + json.hcursor
-             .downField("name")
-             .as[String]
-             .toOption
-             .get + "\"")
+          (
+            json.noSpaces
+              .replaceAllLiterally(replaceStr, replacement)
+              .replaceAllLiterally(replaceStr2, replacement)
+              .replaceFirst(lastname, accumSchema),
+            "\"" + json.hcursor
+              .downField("namespace")
+              .as[String]
+              .toOption
+              .get + "." + json.hcursor
+              .downField("name")
+              .as[String]
+              .toOption
+              .get + "\""
+          )
       })
       ._1
     val toplevelunion = "[" + result + ",\"" + namespaces.tail
@@ -138,12 +134,12 @@ object derivations {
       .map(x => s"${x._1}.${x._2}")
       .mkString("", "\",\"", "\"]")
     val resultSchema =
-    new SchemaFor[Fix[F]] {
-      override def schema(fieldMapper: FieldMapper): Schema =
-        new Schema.Parser()
-          .setValidate(true)
-          .parse(toplevelunion.replaceAllLiterally(s"__$replaceName", ""))
-    }
+      new SchemaFor[Fix[F]] {
+        override def schema(fieldMapper: FieldMapper): Schema =
+          new Schema.Parser()
+            .setValidate(true)
+            .parse(toplevelunion.replaceAllLiterally(s"__$replaceName", ""))
+      }
     resultSchema
   }
 
@@ -151,8 +147,10 @@ object derivations {
 //  val x  = SchemaFor[CofreeTuple[F,A]]
 
   implicit def SchemaForCofree[F[_]: Functor, A](
-                                            implicit ev1: SchemaFor[F[REPLACE.type]], ev2: SchemaFor[A],
-                                            ev3: SchemaFor[CofreeTuple[F, A, REPLACE.type ]]): SchemaFor[Cofree[F, A]] = {
+    implicit ev1: SchemaFor[F[REPLACE.type]],
+    ev2: SchemaFor[A],
+    ev3: SchemaFor[CofreeTuple[F, A, REPLACE.type]]
+  ): SchemaFor[Cofree[F, A]] = {
 
     val replaceNamespace = REPLACE.getClass.getName.split('$').head
     val replaceName =
@@ -169,27 +167,36 @@ object derivations {
     val replacedTuplName = s""" "$tuplName" """
     val tupl = tuplSchema.toString
 
-    val replacedSchema = tupl.replaceAllLiterally(replaceStr, replacedTuplName).replaceAllLiterally(replaceStr2, replacedTuplName).replaceAllLiterally(s"__$replaceName", "")
+    val replacedSchema = tupl
+      .replaceAllLiterally(replaceStr, replacedTuplName)
+      .replaceAllLiterally(replaceStr2, replacedTuplName)
+      .replaceAllLiterally(s"__$replaceName", "")
 
     val resultSchema =
-    new SchemaFor[Cofree[F, A]] {
-      override def schema(fieldMapper: FieldMapper): Schema =
-        new Schema.Parser()
-          .setValidate(true)
-          .parse(replacedSchema.replaceAllLiterally(s"__$replaceName", "").replaceAllLiterally(s"_$replaceName", "").replaceAllLiterally("CofreeTuple", "Cofree"))
-    }
+      new SchemaFor[Cofree[F, A]] {
+        override def schema(fieldMapper: FieldMapper): Schema =
+          new Schema.Parser()
+            .setValidate(true)
+            .parse(
+              replacedSchema
+                .replaceAllLiterally(s"__$replaceName", "")
+                .replaceAllLiterally(s"_$replaceName", "")
+                .replaceAllLiterally("CofreeTuple", "Cofree")
+            )
+      }
     resultSchema
   }
 
   /**
-    * There's probably a much nicer way to do this given labelledGeneric. TODO explore this to generalize
-    *
-    * @param ev
-    * @return
-    */
+   * There's probably a much nicer way to do this given labelledGeneric. TODO explore this to generalize
+   *
+   * @param ev
+   * @return
+   */
   import shims._
   implicit def EncoderForCofree(
-      implicit ev: SchemaFor[PrismWithMetadata]): Encoder[PrismWithMetadata] with Decoder[PrismWithMetadata] =
+    implicit ev: SchemaFor[PrismWithMetadata]
+  ): Encoder[PrismWithMetadata] with Decoder[PrismWithMetadata] =
     new Encoder[PrismWithMetadata] with Decoder[PrismWithMetadata] {
       val arraySchema = Schema.createArray(ev.schema(fieldMapper))
 
@@ -204,67 +211,60 @@ object derivations {
           val arraySchema = Schema.createArray(ev.schema(fieldMapper))
           val tailSchema = record.getSchema.getField("tail").schema
 
-                            val tailRecordSchema = tailSchema
-                              .getTypes
-                              .get(tailSchema.getIndexNamed(containerOfRecord.getClass.getName))
+          val tailRecordSchema = tailSchema.getTypes
+            .get(tailSchema.getIndexNamed(containerOfRecord.getClass.getName))
 
-                            val tailRecord = new GenericData.Record(tailRecordSchema)
-                            val containsr =
-                              new GenericData.Array[AnyRef](arraySchema, containerOfRecord.contains.asJava)
+          val tailRecord = new GenericData.Record(tailRecordSchema)
+          val containsr =
+            new GenericData.Array[AnyRef](arraySchema, containerOfRecord.contains.asJava)
 
-                            tailRecord.put("offset",
-                              Encoder[Offset].encode(containerOfRecord.offset,
-                                SchemaFor[Offset].schema(fieldMapper),
-                                fieldMapper))
-                            tailRecord.put("uuid",
-                              Encoder[UUID].encode(containerOfRecord.uuid,
-                                SchemaFor[UUID].schema(fieldMapper),
-                                fieldMapper))
-                            tailRecord.put("contains", containsr)
-                            containerOfRecord match {
-                              case Plate(_, props, _, _) => {
-                                tailRecord.put(
-                                  "props",
-                                  Encoder[PlatePropertiesUnits]
-                                    .encode(props, AvroSchema[PlatePropertiesUnits], fieldMapper))
-                              }
-                              case Well(_, id, props, _, _) => {
-                                tailRecord.put(
-                                  "id",
-                                  Encoder[WellID].encode(id,
-                                    SchemaFor[WellID].schema(fieldMapper),
-                                    fieldMapper))
-                                tailRecord.put(
-                                  "props",
-                                  Encoder[WellPropertiesUnits]
-                                    .encode(props, AvroSchema[WellPropertiesUnits], fieldMapper))
-                              }
-                              case HeatableWell(_, id, props, tempProps, _, _) => {
-                                tailRecord.put(
-                                  "id",
-                                  Encoder[WellID].encode(id,
-                                    SchemaFor[WellID].schema(fieldMapper),
-                                    fieldMapper))
-                                tailRecord.put(
-                                  "props",
-                                  Encoder[WellPropertiesUnits]
-                                    .encode(props, AvroSchema[WellPropertiesUnits], fieldMapper))
-                                tailRecord.put(
-                                  "tempProps",
-                                  Encoder[WellTempProperties].encode(tempProps,
-                                    AvroSchema[WellTempProperties],
-                                    fieldMapper))
-                              }
-                              case Fluid(_, volume, _, _) => {
-                                tailRecord.put(
-                                  "volume",
-                                  Encoder[Volume].encode(volume, AvroSchema[Volume], fieldMapper))
-                              }
-                              case PipetteTip(_, id, props, _, _) => {
-                                tailRecord.put("id", Encoder[WellID].encode(id, SchemaFor[WellID].schema(fieldMapper), fieldMapper))
-                                tailRecord.put("props", Encoder[PipetteTipData].encode(props, SchemaFor[PipetteTipData].schema(fieldMapper), fieldMapper))
-                              }
-
+          tailRecord.put(
+            "offset",
+            Encoder[Offset].encode(containerOfRecord.offset, SchemaFor[Offset].schema(fieldMapper), fieldMapper)
+          )
+          tailRecord.put(
+            "uuid",
+            Encoder[UUID].encode(containerOfRecord.uuid, SchemaFor[UUID].schema(fieldMapper), fieldMapper)
+          )
+          tailRecord.put("contains", containsr)
+          containerOfRecord match {
+            case Plate(_, props, _, _) => {
+              tailRecord.put(
+                "props",
+                Encoder[PlatePropertiesUnits]
+                  .encode(props, AvroSchema[PlatePropertiesUnits], fieldMapper)
+              )
+            }
+            case Well(_, id, props, _, _) => {
+              tailRecord.put("id", Encoder[WellID].encode(id, SchemaFor[WellID].schema(fieldMapper), fieldMapper))
+              tailRecord.put(
+                "props",
+                Encoder[WellPropertiesUnits]
+                  .encode(props, AvroSchema[WellPropertiesUnits], fieldMapper)
+              )
+            }
+            case HeatableWell(_, id, props, tempProps, _, _) => {
+              tailRecord.put("id", Encoder[WellID].encode(id, SchemaFor[WellID].schema(fieldMapper), fieldMapper))
+              tailRecord.put(
+                "props",
+                Encoder[WellPropertiesUnits]
+                  .encode(props, AvroSchema[WellPropertiesUnits], fieldMapper)
+              )
+              tailRecord.put(
+                "tempProps",
+                Encoder[WellTempProperties].encode(tempProps, AvroSchema[WellTempProperties], fieldMapper)
+              )
+            }
+            case Fluid(_, volume, _, _) => {
+              tailRecord.put("volume", Encoder[Volume].encode(volume, AvroSchema[Volume], fieldMapper))
+            }
+            case PipetteTip(_, id, props, _, _) => {
+              tailRecord.put("id", Encoder[WellID].encode(id, SchemaFor[WellID].schema(fieldMapper), fieldMapper))
+              tailRecord.put(
+                "props",
+                Encoder[PipetteTipData].encode(props, SchemaFor[PipetteTipData].schema(fieldMapper), fieldMapper)
+              )
+            }
 
             case _ => Unit
           }
@@ -289,12 +289,8 @@ object derivations {
         val getContainer = (record: GenericRecord) => {
           val tailRecord = record.get("tail").asInstanceOf[GenericRecord]
 
-          val uuid = Decoder[UUID].decode(tailRecord.get("uuid"),
-            AvroSchema[UUID],
-            fieldMapper)
-          val offset = Decoder[Offset].decode(tailRecord.get("offset"),
-            AvroSchema[Offset],
-            fieldMapper)
+          val uuid = Decoder[UUID].decode(tailRecord.get("uuid"), AvroSchema[UUID], fieldMapper)
+          val offset = Decoder[Offset].decode(tailRecord.get("offset"), AvroSchema[Offset], fieldMapper)
           val contains = tailRecord
             .get("contains")
             .asInstanceOf[java.util.Collection[GenericRecord]]
@@ -302,65 +298,54 @@ object derivations {
             .toList
 
           val tail =
-          tailRecord.getSchema.getName match {
-            case "Fluid" => {
-              val vol = Decoder[Volume].decode(tailRecord.get("volume"),
-                AvroSchema[Volume],
-                fieldMapper)
-              new Fluid[GenericRecord](offset, volume = vol, contains, uuid)
-            }
-            case "Well" => {
-              val wid = Decoder[WellID].decode(tailRecord.get("id"),
-                AvroSchema[WellID],
-                fieldMapper)
-              val props = Decoder[WellPropertiesUnits].decode(
-                tailRecord.get("props"),
-                AvroSchema[WellPropertiesUnits],
-                fieldMapper)
-              new Well[GenericRecord](offset, wid, props, contains, uuid)
-            }
-            case "HeatableWell" => {
-              val wid = Decoder[WellID].decode(tailRecord.get("id"),
-                AvroSchema[WellID],
-                fieldMapper)
-              val props = Decoder[WellPropertiesUnits].decode(
-                tailRecord.get("props"),
-                AvroSchema[WellPropertiesUnits],
-                fieldMapper)
-              val tempProps =
-                Decoder[WellTempProperties].decode(
-                  tailRecord.get("tempProps"),
-                  AvroSchema[WellTempProperties],
-                  fieldMapper)
-              new HeatableWell[GenericRecord](offset,
-                wid,
-                props,
-                tempProps,
-                contains,
-                uuid)
-            }
-            case "Plate" => {
-              val props =
-                Decoder[PlatePropertiesUnits].decode(
+            tailRecord.getSchema.getName match {
+              case "Fluid" => {
+                val vol = Decoder[Volume].decode(tailRecord.get("volume"), AvroSchema[Volume], fieldMapper)
+                new Fluid[GenericRecord](offset, volume = vol, contains, uuid)
+              }
+              case "Well" => {
+                val wid = Decoder[WellID].decode(tailRecord.get("id"), AvroSchema[WellID], fieldMapper)
+                val props = Decoder[WellPropertiesUnits].decode(
                   tailRecord.get("props"),
-                  AvroSchema[PlatePropertiesUnits],
-                  fieldMapper)
-              new Plate[GenericRecord](offset, props, contains, uuid)
+                  AvroSchema[WellPropertiesUnits],
+                  fieldMapper
+                )
+                new Well[GenericRecord](offset, wid, props, contains, uuid)
+              }
+              case "HeatableWell" => {
+                val wid = Decoder[WellID].decode(tailRecord.get("id"), AvroSchema[WellID], fieldMapper)
+                val props = Decoder[WellPropertiesUnits].decode(
+                  tailRecord.get("props"),
+                  AvroSchema[WellPropertiesUnits],
+                  fieldMapper
+                )
+                val tempProps =
+                  Decoder[WellTempProperties].decode(
+                    tailRecord.get("tempProps"),
+                    AvroSchema[WellTempProperties],
+                    fieldMapper
+                  )
+                new HeatableWell[GenericRecord](offset, wid, props, tempProps, contains, uuid)
+              }
+              case "Plate" => {
+                val props =
+                  Decoder[PlatePropertiesUnits].decode(
+                    tailRecord.get("props"),
+                    AvroSchema[PlatePropertiesUnits],
+                    fieldMapper
+                  )
+                new Plate[GenericRecord](offset, props, contains, uuid)
+              }
+              case "Robot" => new Robot[GenericRecord](offset, contains, uuid)
+              case "World" => new World[GenericRecord](offset, contains, uuid)
+              case "Shim"  => new Shim[GenericRecord](offset, contains, uuid)
+              case "PipetteTip" => {
+                val wid = Decoder[WellID].decode(tailRecord.get("id"), AvroSchema[WellID], fieldMapper)
+                val props =
+                  Decoder[PipetteTipData].decode(tailRecord.get("props"), AvroSchema[PipetteTipData], fieldMapper)
+                new PipetteTip[GenericRecord](offset, wid, props, contains, uuid)
+              }
             }
-            case "Robot" => new Robot[GenericRecord](offset, contains, uuid)
-            case "World" => new World[GenericRecord](offset, contains, uuid)
-            case "Shim" => new Shim[GenericRecord](offset, contains, uuid)
-            case "PipetteTip" => {
-              val wid = Decoder[WellID].decode(tailRecord.get("id"),
-                AvroSchema[WellID],
-                fieldMapper)
-              val props = Decoder[PipetteTipData].decode(
-                tailRecord.get("props"),
-                AvroSchema[PipetteTipData],
-                fieldMapper)
-              new PipetteTip[GenericRecord](offset, wid, props, contains, uuid)
-            }
-          }
           tail
         }
         def unwrap(gen: GenericRecord): (PrismMetadata, Container[GenericRecord]) = {
@@ -371,13 +356,14 @@ object derivations {
     }
 
   /**
-    * There's probably a much nicer way to do this given labelledGeneric. TODO explore this to generalize
-    *
-    * @param ev
-    * @return
-    */
-  implicit def EncoderForContainer(implicit ev: SchemaFor[Fix[Container]])
-    : Encoder[Fix[Container]] with Decoder[Fix[Container]] =
+   * There's probably a much nicer way to do this given labelledGeneric. TODO explore this to generalize
+   *
+   * @param ev
+   * @return
+   */
+  implicit def EncoderForContainer(
+    implicit ev: SchemaFor[Fix[Container]]
+  ): Encoder[Fix[Container]] with Decoder[Fix[Container]] =
     new Encoder[Fix[Container]] with Decoder[Fix[Container]] {
       private[this] val arraySchema = Schema.createArray(ev.schema(fieldMapper))
       private[this] val encoderAlg: Algebra[Container, AnyRef] = cont => {
@@ -388,83 +374,60 @@ object derivations {
         val record = new GenericData.Record(recordSchema)
         val containsr =
           new GenericData.Array[AnyRef](arraySchema, cont.contains.asJava)
-        record.put("offset",
-                   Encoder[Offset].encode(cont.offset,
-                                          SchemaFor[Offset].schema(fieldMapper),
-                                          fieldMapper))
-        record.put("uuid",
-                   Encoder[UUID].encode(cont.uuid,
-                                        SchemaFor[UUID].schema(fieldMapper),
-                                        fieldMapper))
+        record.put("offset", Encoder[Offset].encode(cont.offset, SchemaFor[Offset].schema(fieldMapper), fieldMapper))
+        record.put("uuid", Encoder[UUID].encode(cont.uuid, SchemaFor[UUID].schema(fieldMapper), fieldMapper))
         record.put("contains", containsr)
         cont match {
           case Plate(_, props, _, _) => {
             record.put(
               "props",
               Encoder[PlatePropertiesUnits]
-                .encode(props, AvroSchema[PlatePropertiesUnits], fieldMapper))
+                .encode(props, AvroSchema[PlatePropertiesUnits], fieldMapper)
+            )
           }
           case Well(_, id, props, _, _) => {
-            record.put(
-              "id",
-              Encoder[WellID].encode(id,
-                                     SchemaFor[WellID].schema(fieldMapper),
-                                     fieldMapper))
+            record.put("id", Encoder[WellID].encode(id, SchemaFor[WellID].schema(fieldMapper), fieldMapper))
             record.put(
               "props",
               Encoder[WellPropertiesUnits]
-                .encode(props, AvroSchema[WellPropertiesUnits], fieldMapper))
+                .encode(props, AvroSchema[WellPropertiesUnits], fieldMapper)
+            )
           }
           case HeatableWell(_, id, props, tempProps, _, _) => {
-            record.put(
-              "id",
-              Encoder[WellID].encode(id,
-                                     SchemaFor[WellID].schema(fieldMapper),
-                                     fieldMapper))
+            record.put("id", Encoder[WellID].encode(id, SchemaFor[WellID].schema(fieldMapper), fieldMapper))
             record.put(
               "props",
               Encoder[WellPropertiesUnits]
-                .encode(props, AvroSchema[WellPropertiesUnits], fieldMapper))
+                .encode(props, AvroSchema[WellPropertiesUnits], fieldMapper)
+            )
             record.put(
               "tempProps",
-              Encoder[WellTempProperties].encode(tempProps,
-                                                 AvroSchema[WellTempProperties],
-                                                 fieldMapper))
+              Encoder[WellTempProperties].encode(tempProps, AvroSchema[WellTempProperties], fieldMapper)
+            )
           }
           case Fluid(_, volume, _, _) => {
-            record.put(
-              "volume",
-              Encoder[Volume].encode(volume, AvroSchema[Volume], fieldMapper))
+            record.put("volume", Encoder[Volume].encode(volume, AvroSchema[Volume], fieldMapper))
 
           }
           case PipetteTip(_, id, props, _, _) => {
-            record.put(
-              "id",
-              Encoder[WellID].encode(id,
-                SchemaFor[WellID].schema(fieldMapper),
-                fieldMapper))
+            record.put("id", Encoder[WellID].encode(id, SchemaFor[WellID].schema(fieldMapper), fieldMapper))
             record.put(
               "props",
               Encoder[PipetteTipData]
-                .encode(props, AvroSchema[PipetteTipData], fieldMapper))
+                .encode(props, AvroSchema[PipetteTipData], fieldMapper)
+            )
           }
           case _ => Unit
         }
         record
       }
 
-      override def encode(t: Fix[Container],
-                          schema: Schema,
-                          fieldMapper: FieldMapper): AnyRef = t.cata(encoderAlg)
+      override def encode(t: Fix[Container], schema: Schema, fieldMapper: FieldMapper): AnyRef = t.cata(encoderAlg)
 
       private[this] val decoderCoalgebra: Coalgebra[Container, GenericRecord] =
         record => {
-          val uuid = Decoder[UUID].decode(record.get("uuid"),
-                                          AvroSchema[UUID],
-                                          fieldMapper)
-          val offset = Decoder[Offset].decode(record.get("offset"),
-                                              AvroSchema[Offset],
-                                              fieldMapper)
+          val uuid = Decoder[UUID].decode(record.get("uuid"), AvroSchema[UUID], fieldMapper)
+          val offset = Decoder[Offset].decode(record.get("offset"), AvroSchema[Offset], fieldMapper)
           val contains = record
             .get("contains")
             .asInstanceOf[java.util.Collection[GenericRecord]]
@@ -472,57 +435,31 @@ object derivations {
             .toList
           record.getSchema.getName match {
             case "Fluid" => {
-              val vol = Decoder[Volume].decode(record.get("volume"),
-                                               AvroSchema[Volume],
-                                               fieldMapper)
+              val vol = Decoder[Volume].decode(record.get("volume"), AvroSchema[Volume], fieldMapper)
               new Fluid[GenericRecord](offset, volume = vol, contains, uuid)
             }
             case "Well" => {
-              val wid = Decoder[WellID].decode(record.get("id"),
-                                               AvroSchema[WellID],
-                                               fieldMapper)
-              val props = Decoder[WellPropertiesUnits].decode(
-                record.get("props"),
-                AvroSchema[WellPropertiesUnits],
-                fieldMapper)
+              val wid = Decoder[WellID].decode(record.get("id"), AvroSchema[WellID], fieldMapper)
+              val props =
+                Decoder[WellPropertiesUnits].decode(record.get("props"), AvroSchema[WellPropertiesUnits], fieldMapper)
               new Well[GenericRecord](offset, wid, props, contains, uuid)
             }
             case "HeatableWell" => {
-              val wid = Decoder[WellID].decode(record.get("id"),
-                                               AvroSchema[WellID],
-                                               fieldMapper)
-              val props = Decoder[WellPropertiesUnits].decode(
-                record.get("props"),
-                AvroSchema[WellPropertiesUnits],
-                fieldMapper)
+              val wid = Decoder[WellID].decode(record.get("id"), AvroSchema[WellID], fieldMapper)
+              val props =
+                Decoder[WellPropertiesUnits].decode(record.get("props"), AvroSchema[WellPropertiesUnits], fieldMapper)
               val tempProps =
-                Decoder[WellTempProperties].decode(
-                  record.get("tempProps"),
-                  AvroSchema[WellTempProperties],
-                  fieldMapper)
-              new HeatableWell[GenericRecord](offset,
-                                              wid,
-                                              props,
-                                              tempProps,
-                                              contains,
-                                              uuid)
+                Decoder[WellTempProperties].decode(record.get("tempProps"), AvroSchema[WellTempProperties], fieldMapper)
+              new HeatableWell[GenericRecord](offset, wid, props, tempProps, contains, uuid)
             }
             case "PipetteTip" => {
-              val wid = Decoder[WellID].decode(record.get("id"),
-                                               AvroSchema[WellID],
-                                               fieldMapper)
-              val props = Decoder[PipetteTipData].decode(
-                record.get("props"),
-                AvroSchema[PipetteTipData],
-                fieldMapper)
+              val wid = Decoder[WellID].decode(record.get("id"), AvroSchema[WellID], fieldMapper)
+              val props = Decoder[PipetteTipData].decode(record.get("props"), AvroSchema[PipetteTipData], fieldMapper)
               new PipetteTip[GenericRecord](offset, wid, props, contains, uuid)
-          }
+            }
             case "Plate" => {
               val props =
-                Decoder[PlatePropertiesUnits].decode(
-                  record.get("props"),
-                  AvroSchema[PlatePropertiesUnits],
-                  fieldMapper)
+                Decoder[PlatePropertiesUnits].decode(record.get("props"), AvroSchema[PlatePropertiesUnits], fieldMapper)
               new Plate[GenericRecord](offset, props, contains, uuid)
             }
             case "Robot" => new Robot[GenericRecord](offset, contains, uuid)
@@ -531,16 +468,13 @@ object derivations {
           }
         }
 
-      override def decode(value: Any,
-                          schema: Schema,
-                          fieldMapper: FieldMapper): Fix[Container] = {
+      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): Fix[Container] = {
         val record = value.asInstanceOf[GenericRecord]
         record.ana[Fix[Container]](decoderCoalgebra)
       }
     }
 
-  implicit def AvroPath(implicit ev: SchemaFor[Fix[Path]])
-    : Encoder[Fix[Path]] with Decoder[Fix[Path]] = {
+  implicit def AvroPath(implicit ev: SchemaFor[Fix[Path]]): Encoder[Fix[Path]] with Decoder[Fix[Path]] = {
     new Encoder[Fix[Path]] with Decoder[Fix[Path]] {
 
       private[this] val arraySchema = Schema.createArray(ev.schema(fieldMapper))
@@ -552,19 +486,17 @@ object derivations {
         val record = new GenericData.Record(recordSchema)
         path match {
           case Take(which, next) =>
-            record.put("which",
-                       Encoder[Fix[Container]].encode(
-                         which,
-                         SchemaFor[Fix[Container]].schema(fieldMapper),
-                         fieldMapper))
+            record.put(
+              "which",
+              Encoder[Fix[Container]].encode(which, SchemaFor[Fix[Container]].schema(fieldMapper), fieldMapper)
+            )
             record.put("next", next)
 
           case Terminal(next) =>
-            record.put("next",
-                       Encoder[Fix[Container]].encode(
-                         next,
-                         SchemaFor[Fix[Container]].schema(fieldMapper),
-                         fieldMapper))
+            record.put(
+              "next",
+              Encoder[Fix[Container]].encode(next, SchemaFor[Fix[Container]].schema(fieldMapper), fieldMapper)
+            )
           case _ => Unit
         }
         record
@@ -576,32 +508,22 @@ object derivations {
           record.getSchema.getName match {
             case "Take" => {
               val next = record.get("next").asInstanceOf[GenericRecord]
-              val which = Decoder[Fix[Container]].decode(
-                record.get("which"),
-                AvroSchema[Fix[Container]],
-                fieldMapper)
+              val which = Decoder[Fix[Container]].decode(record.get("which"), AvroSchema[Fix[Container]], fieldMapper)
               new Take[GenericRecord](which, next)
             }
             case "Terminal" => {
-              val next = Decoder[Fix[Container]].decode(
-                record.get("next"),
-                AvroSchema[Fix[Container]],
-                fieldMapper)
+              val next = Decoder[Fix[Container]].decode(record.get("next"), AvroSchema[Fix[Container]], fieldMapper)
               new Terminal[GenericRecord](next)
             }
           }
         }
 
-      override def decode(value: Any,
-                          schema: Schema,
-                          fieldMapper: FieldMapper): Fix[Path] = {
+      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): Fix[Path] = {
         val record = value.asInstanceOf[GenericRecord]
         record.ana[Fix[Path]](decoderCoalgebra)
       }
 
-      override def encode(t: Fix[Path],
-                          schema: Schema,
-                          fieldMapper: FieldMapper): AnyRef = t.cata(encoderAlg)
+      override def encode(t: Fix[Path], schema: Schema, fieldMapper: FieldMapper): AnyRef = t.cata(encoderAlg)
     }
   }
 
@@ -613,27 +535,59 @@ object MainTest extends App {
   val simple: PrismWithMetadata = FixToCofreeMap(Shim(Seq(Shim(Seq.empty[Fix[Container]]).embed)).embed)
   val fluid1: PrismWithMetadata = FixToCofreeMap(Fluid[Fix[Container]](Millilitres(7)).embed)
 
-  val well: PrismWithMetadata = Cofree(Map.empty, Well(Offset(), Seq(fluid1), WellID("foo"), WellProperties(0, 0, 0, 0, 0, 0).withUnits()))
-  val complex: PrismWithMetadata = Cofree(Map.empty, Shim(Seq(Cofree(Map.empty, Shim(Seq(Cofree(Map.empty, Robot(
-    Offset(),
-    Seq(well)))))))))
-  val complex2: PrismWithMetadata = Cofree(Map.empty[String, String], Robot[PrismWithMetadata](Offset(),
-    Seq(
-      Cofree(Map.empty[String, String], Robot[PrismWithMetadata](Offset(), Seq[PrismWithMetadata](Cofree(Map.empty[String, String], Robot(
-        Offset(),
-        Seq[PrismWithMetadata](Cofree(Map.empty[String, String], Plate[PrismWithMetadata](
-          Offset(),
-          PlatePropertiesUnits(Some(OriginOffset(10, 100).withUnits()),
-            Map(WellID("biz") -> WellProperties(2, 3, 4, 5, 6, 7).withUnits())),
-          Seq[PrismWithMetadata](complex)
-        ))
-      )))))))))
+  val well: PrismWithMetadata =
+    Cofree(Map.empty, Well(Offset(), Seq(fluid1), WellID("foo"), WellProperties(0, 0, 0, 0, 0, 0).withUnits()))
+  val complex: PrismWithMetadata =
+    Cofree(Map.empty, Shim(Seq(Cofree(Map.empty, Shim(Seq(Cofree(Map.empty, Robot(Offset(), Seq(well)))))))))
+  val complex2: PrismWithMetadata = Cofree(
+    Map.empty[String, String],
+    Robot[PrismWithMetadata](
+      Offset(),
+      Seq(
+        Cofree(
+          Map.empty[String, String],
+          Robot[PrismWithMetadata](
+            Offset(),
+            Seq[PrismWithMetadata](
+              Cofree(
+                Map.empty[String, String],
+                Robot(
+                  Offset(),
+                  Seq[PrismWithMetadata](
+                    Cofree(
+                      Map.empty[String, String],
+                      Plate[PrismWithMetadata](
+                        Offset(),
+                        PlatePropertiesUnits(
+                          Some(OriginOffset(10, 100).withUnits()),
+                          Map(WellID("biz") -> WellProperties(2, 3, 4, 5, 6, 7).withUnits())
+                        ),
+                        Seq[PrismWithMetadata](complex)
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
   println(SchemaFor[Fix[Container]].schema(DefaultFieldMapper))
 
   println(SchemaFor[PrismWithMetadata].schema(DefaultFieldMapper))
-  val encoded = Encoder[PrismWithMetadata].encode(complex2, SchemaFor[PrismWithMetadata].schema(DefaultFieldMapper), DefaultFieldMapper)
+  val encoded = Encoder[PrismWithMetadata].encode(
+    complex2,
+    SchemaFor[PrismWithMetadata].schema(DefaultFieldMapper),
+    DefaultFieldMapper
+  )
   println(encoded)
-  val decoder = Decoder[PrismWithMetadata].decode(encoded, SchemaFor[PrismWithMetadata].schema(DefaultFieldMapper), DefaultFieldMapper)
+  val decoder = Decoder[PrismWithMetadata].decode(
+    encoded,
+    SchemaFor[PrismWithMetadata].schema(DefaultFieldMapper),
+    DefaultFieldMapper
+  )
   println(complex2)
   println(decoder)
 }

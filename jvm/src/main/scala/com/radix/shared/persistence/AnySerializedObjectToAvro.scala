@@ -22,7 +22,7 @@ object AnySerializedObjectToAvro {
         val barr = os.toByteArray
         Some(ser.deserialize(barr, serializerId, manifest).get)
       case str: Utf8 => Some(str.toString)
-      case els => Some(els)
+      case els       => Some(els)
     }
   }
 }

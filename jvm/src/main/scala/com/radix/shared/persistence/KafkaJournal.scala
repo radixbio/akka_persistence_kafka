@@ -35,9 +35,7 @@ object KafkaJournal {
   val journalPostfix = "-journal"
 }
 
-class KafkaJournal(cfg: Config) extends AsyncWriteJournal
-  with AsyncRecovery
-  with ActorLogging {
+class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery with ActorLogging {
 
   private val localConfig = new KafkaConfig(cfg)
 
@@ -67,47 +65,53 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal
   private val committerSettings: CommitterSettings = CommitterSettings(context.system)
 
   val replicator: ActorRef = DistributedData(context.system).replicator
-  val HighestSeqNrKey: String => GCounterKey = { pId => GCounterKey("radix-journal-hsn-" ++ pId) }
+  val HighestSeqNrKey: String => GCounterKey = { pId =>
+    GCounterKey("radix-journal-hsn-" ++ pId)
+  }
   implicit val node: SelfUniqueAddress = DistributedData(context.system).selfUniqueAddress
 
-  private def getEndOffset(partition: TopicPartition): Future[Long] = for {
-    response <- metadataConsumer ? GetEndOffsets(Set(partition))
-    endOffsets = response match {
-      case EndOffsets(Success(topicOffsetMap)) => topicOffsetMap.values.head
-    }
-  } yield endOffsets
+  private def getEndOffset(partition: TopicPartition): Future[Long] =
+    for {
+      response <- metadataConsumer ? GetEndOffsets(Set(partition))
+      endOffsets = response match {
+        case EndOffsets(Success(topicOffsetMap)) => topicOffsetMap.values.head
+      }
+    } yield endOffsets
 
   override def asyncWriteMessages(messages: immutable.Seq[AtomicWrite]): Future[immutable.Seq[Try[Unit]]] = {
     val msgSource: Source[AtomicWrite, NotUsed] = Source.fromIterator(() => messages.iterator)
 
     msgSource
       .groupBy(localConfig.streamParallelism, _.persistenceId)
-      .mapAsync(localConfig.streamParallelism)(atomicWrite => Future {
-        val akkaRecords = atomicWrite.payload.toList
+      .mapAsync(localConfig.streamParallelism)(atomicWrite =>
+        Future {
+          val akkaRecords = atomicWrite.payload.toList
 
-        val kafkaObjectsE = akkaRecords.map(record => {
-          val topic = record.persistenceId + KafkaJournal.journalPostfix
+          val kafkaObjectsE = akkaRecords
+            .map(record => {
+              val topic = record.persistenceId + KafkaJournal.journalPostfix
 
-          val serializedObjectT = AnyAvroToSerializedObject(serializationExtension, record.payload)
-          serializedObjectT match {
-            case Failure(err) => Left(err)
-            case Success((serIdO, obj)) =>
-              /* If the input object doesn't have a manifest (because it's a plain
-               * String, Int, etc), Akka requires that the manifest be empty. It is
-               * assumed that if an object does not have a serializer ID, then it should
-               * not have a manifest.
-               */
-              val key = serIdO match {
-                case None => KafkaJournalKey(record, 0).copy(manifest = "")
-                case Some(serId) => KafkaJournalKey(record, serId)
+              val serializedObjectT = AnyAvroToSerializedObject(serializationExtension, record.payload)
+              serializedObjectT match {
+                case Failure(err)           => Left(err)
+                case Success((serIdO, obj)) =>
+                  /* If the input object doesn't have a manifest (because it's a plain
+                   * String, Int, etc), Akka requires that the manifest be empty. It is
+                   * assumed that if an object does not have a serializer ID, then it should
+                   * not have a manifest.
+                   */
+                  val key = serIdO match {
+                    case None        => KafkaJournalKey(record, 0).copy(manifest = "")
+                    case Some(serId) => KafkaJournalKey(record, serId)
+                  }
+                  Right(topic, key, obj)
               }
-              Right(topic, key, obj)
-          }
-        }).sequenceU // fail the whole set if serialization fails
+            })
+            .sequenceU // fail the whole set if serialization fails
 
-        val kafkaObjectToProducerRecord: ((String, KafkaJournalKey, Object)) => ProducerRecord[String, Object] = {
-          case (topic, key, obj) => {
-          //uncomment to autostore timestamp from the messages. Might be useful for prismuservice in the future?
+          val kafkaObjectToProducerRecord: ((String, KafkaJournalKey, Object)) => ProducerRecord[String, Object] = {
+            case (topic, key, obj) => {
+              //uncomment to autostore timestamp from the messages. Might be useful for prismuservice in the future?
 //                      val genRecord = obj.asInstanceOf[GenericRecord]
 //                      val schema = genRecord.getSchema
 //                      val hasTimestamp = schema.getFields.contains("timestamp") //Assume this is a some or none
@@ -120,29 +124,32 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal
 //                        new ProducerRecord[String, Object](topic, 0, key.toString(), genRecord.asInstanceOf[Object])
 //                      }
 //                      else{
-                        new ProducerRecord[String, Object](topic, 0, key.toString(), obj)
+              new ProducerRecord[String, Object](topic, 0, key.toString(), obj)
 //                      }
 
+            }
+          }
+
+          kafkaObjectsE match {
+            case Left(err) =>
+              ProducerMessage.passThrough[String, Object, (AtomicWrite, Option[Throwable])]((atomicWrite, Some(err)))
+            case Right(kafkaObjects) =>
+              val producerRecords = kafkaObjects.map(kafkaObjectToProducerRecord)
+              ProducerMessage
+                .multi[String, Object, (AtomicWrite, Option[Throwable])](producerRecords, (atomicWrite, None))
           }
         }
-
-        kafkaObjectsE match {
-          case Left(err) =>
-            ProducerMessage.passThrough[String, Object, (AtomicWrite, Option[Throwable])]((atomicWrite, Some(err)))
-          case Right(kafkaObjects) =>
-            val producerRecords = kafkaObjects.map(kafkaObjectToProducerRecord)
-            ProducerMessage.multi[String, Object, (AtomicWrite, Option[Throwable])](producerRecords, (atomicWrite, None))
-        }
-      })
+      )
       .via(Producer.flexiFlow(producerSettings, kafkaProducer))
       .map(_.passThrough match {
         case (aw, Some(x)) => (aw, Failure(x))
-        case (aw, None)    =>
+        case (aw, None) =>
           val seqNums = aw.payload.map(_.sequenceNr).toSet
           val highestSeqNr = seqNums.max
 
-          replicator ! Update(HighestSeqNrKey(aw.persistenceId), GCounter.empty :+ highestSeqNr, WriteLocal) { currentHsn =>
-            currentHsn :+ (highestSeqNr - currentHsn.value).toLong
+          replicator ! Update(HighestSeqNrKey(aw.persistenceId), GCounter.empty :+ highestSeqNr, WriteLocal) {
+            currentHsn =>
+              currentHsn :+ (highestSeqNr - currentHsn.value).toLong
           }
 
           (aw, Success())
@@ -164,8 +171,9 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal
         .takeWhile(_.record.offset < endOffset - 1, inclusive = true)
         .map(msg => (KafkaJournalKey(msg.record.key), msg))
         .filter { case (key, _) => toSequenceNr >= key.sequenceNr }
-        .map { case (key, msg) =>
-          ProducerMessage.single(new ProducerRecord[String, Object](topic, key.toString, null), msg.committableOffset)
+        .map {
+          case (key, msg) =>
+            ProducerMessage.single(new ProducerRecord[String, Object](topic, key.toString, null), msg.committableOffset)
         }
         .via(Producer.flexiFlow(producerSettings))
         .map(_.passThrough)
@@ -173,15 +181,20 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal
         .mapMaterializedValue(DrainingControl.apply)
         .run
         .streamCompletion
-        .map { _ => () }
+        .map { _ =>
+          ()
+        }
         .recoverWith {
           case _: RetriableCommitFailedException => asyncDeleteMessagesTo(persistenceId, toSequenceNr)
-          case exception: Throwable => throw exception
+          case exception: Throwable              => throw exception
         }
     } yield result
   }
 
-	override def asyncReadHighestSequenceNr(persistenceId: String, fromSequenceNr: Long): scala.concurrent.Future[Long] = {
+  override def asyncReadHighestSequenceNr(
+    persistenceId: String,
+    fromSequenceNr: Long
+  ): scala.concurrent.Future[Long] = {
     val hsnPromise = Promise[Long]()
     val hsnFuture = hsnPromise.future
 
@@ -203,8 +216,9 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal
     hsnFuture
   }
 
-	override def asyncReplayMessages(persistenceId: String, fromSequenceNr: Long, toSequenceNr: Long, max: Long)
-                                  (recoveryCallback: akka.persistence.PersistentRepr => Unit): scala.concurrent.Future[Unit] = {
+  override def asyncReplayMessages(persistenceId: String, fromSequenceNr: Long, toSequenceNr: Long, max: Long)(
+    recoveryCallback: akka.persistence.PersistentRepr => Unit
+  ): scala.concurrent.Future[Unit] = {
     val topic = persistenceId + KafkaJournal.journalPostfix
     val partition = new TopicPartition(topic, 0)
     val subscription = Subscriptions.assignmentWithOffset(partition, 0)
@@ -224,11 +238,12 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal
         .map {
           _.values.toList.sortBy { case (key, _) => key.sequenceNr }
         }
-        .map(_.map {
-          case (key, record) =>
-            Console.println(s"replaying $record")
+        .map(
+          _.map {
+            case (key, record) =>
+              Console.println(s"replaying $record")
 
-            ///// TODO should we uncomment the following to have support for timestamps during replay?
+              ///// TODO should we uncomment the following to have support for timestamps during replay?
 //            record.value match {
 //              case genRecord: GenericRecord =>
 //                val schema = genRecord.getSchema
@@ -243,21 +258,34 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal
 //                }
 //              case _ => ()
 //            }
-            val deserializedObjectO = AnySerializedObjectToAvro(serializationExtension, key.serializerId, key.manifest, record.value) //TODO check if the schema contains a timestamp and do tehe reverse
-            val (obj, isDeleted) = deserializedObjectO match {
-              case None => (null, true)
-              case Some(obj) => (obj, false)
-            }
-            PersistentRepr(obj, key.sequenceNr, persistenceId, key.manifest, deleted = isDeleted, writerUuid = key.writerUuid.toString)
-        }.foldLeft((0, List.empty[PersistentRepr]))({
-          case ((counter, accum), perst) =>
-            // don't count deleted messages in the max
-            if (perst.deleted) (counter, accum :+ perst)
-            else if (counter >= max) (counter, accum)
-            else (counter + 1, accum :+ perst)
-        })
-          ._2
-          .foreach(recoveryCallback))
+              val deserializedObjectO = AnySerializedObjectToAvro(
+                serializationExtension,
+                key.serializerId,
+                key.manifest,
+                record.value
+              ) //TODO check if the schema contains a timestamp and do tehe reverse
+              val (obj, isDeleted) = deserializedObjectO match {
+                case None      => (null, true)
+                case Some(obj) => (obj, false)
+              }
+              PersistentRepr(
+                obj,
+                key.sequenceNr,
+                persistenceId,
+                key.manifest,
+                deleted = isDeleted,
+                writerUuid = key.writerUuid.toString
+              )
+          }.foldLeft((0, List.empty[PersistentRepr]))({
+              case ((counter, accum), perst) =>
+                // don't count deleted messages in the max
+                if (perst.deleted) (counter, accum :+ perst)
+                else if (counter >= max) (counter, accum)
+                else (counter + 1, accum :+ perst)
+            })
+            ._2
+            .foreach(recoveryCallback)
+        )
     } yield result
   }
 }

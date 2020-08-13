@@ -22,6 +22,11 @@ object KafkaJournalKey {
   }
 
   def apply(record: PersistentRepr, serializerId: Int): KafkaJournalKey = {
-    KafkaJournalKey(record.sequenceNr, UUID.fromString(record.writerUuid), record.payload.getClass.getName, serializerId)
+    KafkaJournalKey(
+      record.sequenceNr,
+      UUID.fromString(record.writerUuid),
+      record.payload.getClass.getName,
+      serializerId
+    )
   }
 }

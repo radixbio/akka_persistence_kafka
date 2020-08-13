@@ -50,21 +50,26 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
 
   val snapshotPostfix = "-snapshot"
 
-  private def getEndOffset(partition: TopicPartition): Future[Long] = for {
-    response <- metadataConsumer ? GetEndOffsets(Set(partition))
-    endOffsets = response match {
-      case EndOffsets(Success(topicOffsetMap)) => topicOffsetMap.values.head
-    }
-  } yield endOffsets
+  private def getEndOffset(partition: TopicPartition): Future[Long] =
+    for {
+      response <- metadataConsumer ? GetEndOffsets(Set(partition))
+      endOffsets = response match {
+        case EndOffsets(Success(topicOffsetMap)) => topicOffsetMap.values.head
+      }
+    } yield endOffsets
 
-  private def listTopics() = for {
-    response <- metadataConsumer ? ListTopics
-    topics = response match {
-      case Topics(Success(topicMap)) => topicMap.keys.toSet
-    }
-  } yield topics
+  private def listTopics() =
+    for {
+      response <- metadataConsumer ? ListTopics
+      topics = response match {
+        case Topics(Success(topicMap)) => topicMap.keys.toSet
+      }
+    } yield topics
 
-  private def loadSnapshots(persistenceId: String, criteria: SnapshotSelectionCriteria): Future[Seq[SelectedSnapshot]] = {
+  private def loadSnapshots(
+    persistenceId: String,
+    criteria: SnapshotSelectionCriteria
+  ): Future[Seq[SelectedSnapshot]] = {
     /* We could infer that a topic with an endOffset of zero is invalid,
      * however that would lead to the topic in question being created, which
      * is not what we want. As a result, we must ensure that the topic exists
@@ -73,7 +78,7 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
     val requestedTopic = persistenceId + snapshotPostfix
 
     listTopics().flatMap { validTopics =>
-      if(validTopics.contains(requestedTopic)) {
+      if (validTopics.contains(requestedTopic)) {
         val partition = new TopicPartition(requestedTopic, 0)
         val subscription = Subscriptions.assignmentWithOffset(partition, 0)
 
@@ -85,27 +90,34 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
             .map(record => (KafkaSnapshotKey(record.key), record))
             .dropWhile { case (key, _) => key.sequenceNr < criteria.minSequenceNr }
             .takeWhile({ case (_, record) => record.offset < endOffset - 1 }, inclusive = true)
-            .filter { case (key, _) => criteria.minSequenceNr <= key.sequenceNr && key.sequenceNr <= criteria.maxSequenceNr }
-            .filter { case (key, _) => criteria.minTimestamp <= key.timestamp && key.timestamp <= criteria.maxTimestamp }
+            .filter {
+              case (key, _) => criteria.minSequenceNr <= key.sequenceNr && key.sequenceNr <= criteria.maxSequenceNr
+            }
+            .filter {
+              case (key, _) => criteria.minTimestamp <= key.timestamp && key.timestamp <= criteria.maxTimestamp
+            }
             .runWith(Sink.seq)
 
         } yield {
           records
-            /* In the event two records have the same sequence Id,
+          /* In the event two records have the same sequence Id,
              * prefer the one with the largest offset.
              */
             .groupBy { case (key, _) => key.sequenceNr }
             .mapValues(_.maxBy { case (_, record) => record.offset })
-            .values.toList
+            .values
+            .toList
             /* At this point we have converged on a single record per sequence ID,
              * in ascending order. However, some records may have been deleted, and
              * we must filter them out at this time.
              */
-            .filter { case (_, record) => record.value != null }.sortBy { case (key, _) => key.sequenceNr }
+            .filter { case (_, record) => record.value != null }
             .sortBy { case (key, _) => key.sequenceNr }
-            .map { case (key, record) =>
-              val metadata = SnapshotMetadata(persistenceId, key.sequenceNr, key.timestamp)
-              SelectedSnapshot(metadata, record.value)
+            .sortBy { case (key, _) => key.sequenceNr }
+            .map {
+              case (key, record) =>
+                val metadata = SnapshotMetadata(persistenceId, key.sequenceNr, key.timestamp)
+                SelectedSnapshot(metadata, record.value)
             }
         }
       } else {
@@ -114,7 +126,10 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
     }
   }
 
-  override def loadAsync(persistenceId: String, criteria: SnapshotSelectionCriteria): Future[Option[SelectedSnapshot]] = {
+  override def loadAsync(
+    persistenceId: String,
+    criteria: SnapshotSelectionCriteria
+  ): Future[Option[SelectedSnapshot]] = {
     for {
       matchingSnapshots <- loadSnapshots(persistenceId, criteria)
       /* The records are in ascending order, so we opt for the last item in
@@ -128,8 +143,13 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
     Source
       .single(AnyAvroToSerializedObject(serializationExtension, snapshot))
       .mapAsync(1)(Future.fromTry)
-      .map { case (_, obj) => new ProducerRecord(metadata.persistenceId + snapshotPostfix, 0, KafkaSnapshotKey(metadata).toString, obj) }
-      .map { pr => ProducerMessage.single(pr, NotUsed) }
+      .map {
+        case (_, obj) =>
+          new ProducerRecord(metadata.persistenceId + snapshotPostfix, 0, KafkaSnapshotKey(metadata).toString, obj)
+      }
+      .map { pr =>
+        ProducerMessage.single(pr, NotUsed)
+      }
       .via(Producer.flexiFlow(producerSettings, kafkaProducer))
       .runWith(Sink.ignore)
       .map(_ => ())
@@ -155,7 +175,8 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
         case Some(snapshot) =>
           val seqNrToDelete = snapshot.metadata.sequenceNr
           val timestampToDelete = snapshot.metadata.timestamp
-          val deletionCriteria = SnapshotSelectionCriteria(seqNrToDelete, timestampToDelete, seqNrToDelete, timestampToDelete)
+          val deletionCriteria =
+            SnapshotSelectionCriteria(seqNrToDelete, timestampToDelete, seqNrToDelete, timestampToDelete)
           deleteAsync(metadata.persistenceId, deletionCriteria)
       }
   }

@@ -5,7 +5,7 @@ import akka.actor.{ActorContext, ActorRef, ExtendedActorSystem}
 import akka.kafka.Metadata.{EndOffsets, GetEndOffsets}
 import akka.kafka.{ConsumerSettings, KafkaConsumerActor, Subscriptions}
 import akka.kafka.scaladsl.Consumer
-import akka.persistence.query.{EventEnvelope, NoOffset, scaladsl}
+import akka.persistence.query.{scaladsl, EventEnvelope, NoOffset}
 import akka.serialization.{Serialization, SerializationExtension}
 import akka.stream.scaladsl.{Keep, Sink, Source}
 import com.radix.shared.persistence.{AnySerializedObjectToAvro, KafkaConfig, KafkaJournal, KafkaJournalKey}
@@ -25,10 +25,10 @@ import scala.concurrent.Future
 import scala.util.Success
 
 class KafkaScalaReadJournal(system: ExtendedActorSystem, cfg: Config)
-  extends scaladsl.ReadJournal
-  with scaladsl.CurrentPersistenceIdsQuery
-  with scaladsl.EventsByPersistenceIdQuery
-  with scaladsl.CurrentEventsByPersistenceIdQuery {
+    extends scaladsl.ReadJournal
+    with scaladsl.CurrentPersistenceIdsQuery
+    with scaladsl.EventsByPersistenceIdQuery
+    with scaladsl.CurrentEventsByPersistenceIdQuery {
 
   val localConfig: KafkaConfig = new KafkaConfig(cfg)
   implicit val timeout: Timeout = Timeout(5.seconds)
@@ -59,9 +59,15 @@ class KafkaScalaReadJournal(system: ExtendedActorSystem, cfg: Config)
   override def currentPersistenceIds(): Source[String, NotUsed] =
     Source
       .fromIterator(() => kafkaConsumer.listTopics.keySet.iterator.asScala)
-      .filter { topic => topic.endsWith(KafkaJournal.journalPostfix) }
+      .filter { topic =>
+        topic.endsWith(KafkaJournal.journalPostfix)
+      }
 
-  override def eventsByPersistenceId(persistenceId: String, fromSequenceNr: Long, toSequenceNr: Long): Source[EventEnvelope, NotUsed] = {
+  override def eventsByPersistenceId(
+    persistenceId: String,
+    fromSequenceNr: Long,
+    toSequenceNr: Long
+  ): Source[EventEnvelope, NotUsed] = {
     val topic = persistenceId + KafkaJournal.journalPostfix
 
     val partition = new TopicPartition(topic, 0)
@@ -73,15 +79,24 @@ class KafkaScalaReadJournal(system: ExtendedActorSystem, cfg: Config)
       .filter { case (key, _) => fromSequenceNr <= key.sequenceNr && toSequenceNr >= key.sequenceNr }
       // TODO This groupBy will be extremely memory intensive. Figure out a better way.
       .groupBy(toSequenceNr.toInt, { case (key, _) => key.sequenceNr })
-      .reduce { (best, next) => if(next._1.sequenceNr > best._1.sequenceNr) next else best }
+      .reduce { (best, next) =>
+        if (next._1.sequenceNr > best._1.sequenceNr) next else best
+      }
       // TODO It's not evident that this will preserve the order of the elements.
       .mergeSubstreams
-      .map { case (key, record) => {
-        val deserializedObjectO = AnySerializedObjectToAvro(serializationExtension, key.serializerId, key.manifest, record.value)
-        EventEnvelope(NoOffset, persistenceId, key.sequenceNr, deserializedObjectO)
-      } }
+      .map {
+        case (key, record) => {
+          val deserializedObjectO =
+            AnySerializedObjectToAvro(serializationExtension, key.serializerId, key.manifest, record.value)
+          EventEnvelope(NoOffset, persistenceId, key.sequenceNr, deserializedObjectO)
+        }
+      }
       .mapMaterializedValue(_ => NotUsed)
   }
 
-  override def currentEventsByPersistenceId(persistenceId: String, fromSequenceNr: Long, toSequenceNr: Long): Source[EventEnvelope, NotUsed] = ???
+  override def currentEventsByPersistenceId(
+    persistenceId: String,
+    fromSequenceNr: Long,
+    toSequenceNr: Long
+  ): Source[EventEnvelope, NotUsed] = ???
 }

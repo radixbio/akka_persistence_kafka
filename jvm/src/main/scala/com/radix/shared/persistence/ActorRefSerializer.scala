@@ -16,11 +16,12 @@ object ActorRefSerializer {
       Serialization.serializedActorPath(t.toUntyped)
     }
   }
-  implicit def DecoderForTypedActorRef[T](implicit A: ExtendedActorSystem): Decoder[ActorRef[T]] = new Decoder[ActorRef[T]] {
-    override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): ActorRef[T] = {
-      A.provider.resolveActorRef(value.toString)
+  implicit def DecoderForTypedActorRef[T](implicit A: ExtendedActorSystem): Decoder[ActorRef[T]] =
+    new Decoder[ActorRef[T]] {
+      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): ActorRef[T] = {
+        A.provider.resolveActorRef(value.toString)
+      }
     }
-  }
 
   implicit object SchemaForUntypedActorRef extends SchemaFor[UActorRef] {
     override def schema(fieldMapper: FieldMapper): Schema = SchemaBuilder.builder.stringType()
