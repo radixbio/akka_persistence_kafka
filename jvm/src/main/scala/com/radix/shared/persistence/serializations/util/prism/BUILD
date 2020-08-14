@@ -8,6 +8,7 @@ scala_library(
         "derivations.scala",
     ],
     plugins = ["@third_party//3rdparty/jvm/org/typelevel:kind_projector"],
+    resources = ["resources/application.conf"],
     exports = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/squants:squants-serializations",

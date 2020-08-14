@@ -24,6 +24,9 @@ import squants.space.{Millilitres, Volume}
 
 import scala.collection.JavaConverters._
 import java.util
+import akka.persistence.SnapshotMetadata
+import com.radix.shared.persistence.AvroSerializer
+import com.radix.shared.util.prism.rpc.PrismProtocol.{CASMetadataFailure, CASMetadataResponse, CASMetadataSuccess, CASTree, CASTreeAddMetadata, CASTreeFailure, CASTreeInitialMetadata, CASTreeInsert, CASTreeMergeFluid, CASTreeMetadata, CASTreeMove, CASTreeRemove, CASTreeResponse, CASTreeSplitFluid, CASTreeSuccess, Find, FindSuccess, GetLatestMetadata, GetLatestTree, GetTree, GetTreeNoUUIDFound, GetTreeResponse, GetTreeSuccess, NoFindResponse, PrismMetadata, PrismWithMetadata, Request}
 
 import com.radix.shared.util.prism.rpc.PrismProtocol.{PrismMetadata, PrismWithMetadata}
 object derivations {
@@ -590,4 +593,128 @@ object MainTest extends App {
   )
   println(complex2)
   println(decoder)
+}
+
+object Serializers {
+
+  import com.radix.shared.persistence.serializations.util.prism.derivations._
+  import com.radix.shared.persistence.serializations.squants.schemas._
+  import org.apache.avro.{Schema, SchemaBuilder}
+  import com.sksamuel.avro4s.{Decoder, Encoder, FieldMapper}
+  import com.sksamuel.avro4s.SchemaFor
+
+  import scala.collection.JavaConverters._
+
+  class CASPersistAvroTree extends AvroSerializer[CASTree]
+
+  class CASPersistAvroInsert extends AvroSerializer[CASTreeInsert]
+
+  class CASPersistAvroMove extends AvroSerializer[CASTreeMove]
+
+  class CASPersistAvroMergeFluid extends AvroSerializer[CASTreeMergeFluid]
+
+  class CASPersistAvroSplitFluid extends AvroSerializer[CASTreeSplitFluid]
+
+  class CASPersistAvroRemove extends AvroSerializer[CASTreeRemove]
+
+
+
+  implicit def mapSchemaForUUID[V](
+                                    implicit schemaFor: SchemaFor[V]): SchemaFor[Map[UUID, V]] = {
+    new SchemaFor[Map[UUID, V]] {
+      override def schema(fieldMapper: FieldMapper): Schema =
+        SchemaBuilder.map().values(schemaFor.schema(fieldMapper))
+    }
+  }
+
+  implicit def mapDecoderUUID[T](
+                                  implicit valueDecoder: Decoder[T]): Decoder[Map[UUID, T]] =
+    new Decoder[Map[UUID, T]] {
+
+      override def decode(value: Any,
+                          schema: Schema,
+                          fieldMapper: FieldMapper): Map[UUID, T] =
+        value match {
+          case map: java.util.Map[_, _] =>
+            map.asScala.toMap.map {
+              case (k, v) =>
+                UUID.fromString(
+                  implicitly[Decoder[String]]
+                    .decode(k, schema, fieldMapper)) -> valueDecoder.decode(
+                  v,
+                  schema.getValueType,
+                  fieldMapper)
+            }
+          case other => sys.error("Unsupported map " + other)
+        }
+    }
+
+  implicit def mapEncoderUUID[V](
+                                  implicit encoder: Encoder[V]): Encoder[Map[UUID, V]] =
+    new Encoder[Map[UUID, V]] {
+
+      override def encode(
+                           map: Map[UUID, V],
+                           schema: Schema,
+                           fieldMapper: FieldMapper): java.util.Map[String, AnyRef] = {
+        require(schema != null)
+        val java = new util.HashMap[String, AnyRef]
+        map.foreach {
+          case (k, v) =>
+            java.put(k.toString,
+              encoder.encode(v, schema.getValueType, fieldMapper))
+        }
+        java
+      }
+    }
+
+  class CASPersistMetadata extends AvroSerializer[CASTreeMetadata]
+
+  class CASPersistAddMetadata extends AvroSerializer[CASTreeAddMetadata]
+
+  class CASPersistInitialMetadata extends AvroSerializer[CASTreeInitialMetadata]
+
+
+  class GetPersistLatestTree extends AvroSerializer[GetLatestTree]
+
+  class GetPersistLatestMetadata extends AvroSerializer[GetLatestMetadata]
+
+  class PersistFind extends AvroSerializer[Find]
+
+  class PersistGetTree extends AvroSerializer[GetTree]
+
+  class PersistFindSuccess extends AvroSerializer[FindSuccess]
+
+  //TODO in derivations finish implementing the path serializer
+
+  class PersistMetadataSuccess extends AvroSerializer[CASMetadataSuccess]
+
+  class PersistNoFindResponse extends AvroSerializer[NoFindResponse]
+
+  class PersistGetTreeSuccess extends AvroSerializer[GetTreeSuccess]
+
+  class PersistGetTreeNoUUIDFound extends AvroSerializer[GetTreeNoUUIDFound]
+
+  class PersistCasTreeSuccess extends AvroSerializer[CASTreeSuccess]
+
+  class PersistCASTreeFailure extends AvroSerializer[CASTreeFailure]
+
+  class PersistCASMetadataFailure extends AvroSerializer[CASMetadataFailure]
+
+  class PersistGetTreeResponse extends AvroSerializer[GetTreeResponse]
+
+  class PersistCASTreeResponse extends AvroSerializer[CASTreeResponse]
+
+  class PersistCASMetadataResponse extends AvroSerializer[CASMetadataResponse]
+
+  class PersistRequest extends AvroSerializer[Request]
+
+  class PersistSnapshotMetadata extends AvroSerializer[SnapshotMetadata]
+
+  //  implicit val requestEncoder = implicitly[Encoder[Request]]  //Fixes weird bug in prism historical serialization
+  //  implicit val requestDecooder = implicitly[Decoder[Request]] //Fixes weird bug in prism historical serialization
+  //  implicit val requestSchema = implicitly[SchemaFor[Request]] //Fixes weird bug in prism historical serialization
+
+  // class PersistMetadataSuccess extends AvroSerializer[MetadataSuccess]
+
 }
