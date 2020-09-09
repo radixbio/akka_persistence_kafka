@@ -1,6 +1,6 @@
 scala_library(
     name = "persistence",
-    resources = ["src/main/resources/application.conf"],
+    resources = ["src/main/resources/reference.conf"],
     visibility = ["//visibility:public"],
     exports = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
@@ -33,10 +33,10 @@ scala_test(
     ],
     resources = ["src/test/resources/application.conf"],
     deps = [
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_cluster_typed",
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_persistence_tck",
         "@third_party//3rdparty/jvm/io/github/embeddedkafka:embedded_kafka_schema_registry",
-        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
     ],
 )
 
@@ -55,11 +55,11 @@ scala_test(
     name = "avro-serialization-test",
     srcs = ["src/test/scala/SerializationTest.scala"],
     deps = [
+        "//external:jar/com/typesafe/config",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
         "@third_party//3rdparty/jvm/com/sksamuel/avro4s:avro4s_core",
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_testkit_typed",
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_cluster_typed",
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_testkit",
-        "//external:jar/com/typesafe/config",
-        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
     ],
 )

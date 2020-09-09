@@ -3,7 +3,7 @@ scala_library(
     srcs = [
         "datatypes.scala",
     ],
-    resources = ["resources/application.conf"],
+    resources = ["resources/reference.conf"],
     visibility = [
         "//algs/dbpmjss-uservice/jvm:__subpackages__",
         "//shared/persistence:__subpackages__",

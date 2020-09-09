@@ -7,7 +7,7 @@ scala_library(
     srcs = [
         "dfns.scala",
     ],
-    resources = ["resources/application.conf"],
+    resources = ["resources/reference.conf"],
     exports = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/squants:squants-serializations",

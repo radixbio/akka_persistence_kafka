@@ -7,7 +7,7 @@ scala_library(
     srcs = [
         "GIGraph.scala",
     ],
-    resources = ["resources/application.conf"],
+    resources = ["resources/reference.conf"],
     exports = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
     ],
