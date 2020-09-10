@@ -56,7 +56,9 @@ object schemas {
       val parsed = record.get("temperature").toString + " " + record.get("unit").toString
       Temperature(parsed).getOrElse(
         throw new IllegalStateException(
-          s"AVRO failed to deserialize in radix code. $parsed is not a valid squants.Temperature"))
+          s"AVRO failed to deserialize in radix code. $parsed is not a valid squants.Temperature"
+        )
+      )
     }
   }
 
@@ -75,7 +77,9 @@ object schemas {
       val parsed = record.get("length").toString + " " + record.get("unit").toString
       Length(parsed).getOrElse(
         throw new IllegalStateException(
-          s"AVRO failed to deserialize in radix code. $parsed is not a valid squants.Length"))
+          s"AVRO failed to deserialize in radix code. $parsed is not a valid squants.Length"
+        )
+      )
     }
   }
 
@@ -94,7 +98,9 @@ object schemas {
       val parsed = record.get("volume").toString + " " + record.get("unit").toString
       Volume(parsed).getOrElse(
         throw new IllegalStateException(
-          s"AVRO failed to deserialize in radix code. $parsed is not a valid squants.Volume"))
+          s"AVRO failed to deserialize in radix code. $parsed is not a valid squants.Volume"
+        )
+      )
     }
   }
 

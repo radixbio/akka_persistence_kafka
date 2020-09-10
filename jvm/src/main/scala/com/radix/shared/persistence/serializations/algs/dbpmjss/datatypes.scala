@@ -55,29 +55,29 @@ object datatypes {
   final case class Jobs(jobs: List[(JobIndex, Job)])
 
   /**
-    * The buffertype denotes the ability of a machine to buffer it's output after it's been completed
-    */
+   * The buffertype denotes the ability of a machine to buffer it's output after it's been completed
+   */
   sealed trait BufferType
 
   /**
-    * No-Wait implies that the next task must start directly after the current task, no buffering or blocking permitted
-    */
+   * No-Wait implies that the next task must start directly after the current task, no buffering or blocking permitted
+   */
   final case object NoWait extends BufferType
 
   /**
-    * No-Buffer implies that the next task may block the previous task, but not be placed in a buffer to avoid blocking
-    */
+   * No-Buffer implies that the next task may block the previous task, but not be placed in a buffer to avoid blocking
+   */
   final case object NoBuffer extends BufferType
 
   /**
-    * Limited-buffer implies a finite number of buffers that the machine contains in order to continue making forward progress
-    * while child tasks have not yet started being processed by moving the job to a buffer zone
-    */
+   * Limited-buffer implies a finite number of buffers that the machine contains in order to continue making forward progress
+   * while child tasks have not yet started being processed by moving the job to a buffer zone
+   */
   final case class LimitedBuffer(numbuffers: Int) extends BufferType
 
   /**
-    * An infinite number of buffers
-    */
+   * An infinite number of buffers
+   */
   final case object InfiniteBuffer extends BufferType
 
   final case class Machine(name: String, bufferType: BufferType, replicas: Int = 1)
@@ -106,18 +106,19 @@ object datatypes {
   }
 
   final case class Machines(machines: Map[MachineIndex, Machine])
-  final case class Operation(name: String,
-                             makespan: Long,
-                             machine: Machine,
-                             prev: List[OperationIndex],
-                             up: List[OperationIndex],
-                             thisIndex: OperationIndex)
+  final case class Operation(
+    name: String,
+    makespan: Long,
+    machine: Machine,
+    prev: List[OperationIndex],
+    up: List[OperationIndex],
+    thisIndex: OperationIndex
+  )
 
   final case class Schedule(schedule: Map[MachineIndex, MultipleMachines], M: Machines, J: Jobs)
 
   class DBPMJSSSchedule extends AvroSerializer[Schedule]
   class DBPMJSSMachines extends AvroSerializer[Machines]
   class DBPMJSSJobs extends AvroSerializer[Jobs]
-
 
 }

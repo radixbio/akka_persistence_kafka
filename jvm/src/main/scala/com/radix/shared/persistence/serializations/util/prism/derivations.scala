@@ -617,52 +617,43 @@ object Serializers {
 
   class CASPersistAvroRemove extends AvroSerializer[CASTreeRemove]
 
-
-
-  implicit def mapSchemaForUUID[V](
-                                    implicit schemaFor: SchemaFor[V]): SchemaFor[Map[UUID, V]] = {
+  implicit def mapSchemaForUUID[V](implicit schemaFor: SchemaFor[V]): SchemaFor[Map[UUID, V]] = {
     new SchemaFor[Map[UUID, V]] {
       override def schema(fieldMapper: FieldMapper): Schema =
         SchemaBuilder.map().values(schemaFor.schema(fieldMapper))
     }
   }
 
-  implicit def mapDecoderUUID[T](
-                                  implicit valueDecoder: Decoder[T]): Decoder[Map[UUID, T]] =
+  implicit def mapDecoderUUID[T](implicit valueDecoder: Decoder[T]): Decoder[Map[UUID, T]] =
     new Decoder[Map[UUID, T]] {
 
-      override def decode(value: Any,
-                          schema: Schema,
-                          fieldMapper: FieldMapper): Map[UUID, T] =
+      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): Map[UUID, T] =
         value match {
           case map: java.util.Map[_, _] =>
             map.asScala.toMap.map {
               case (k, v) =>
                 UUID.fromString(
                   implicitly[Decoder[String]]
-                    .decode(k, schema, fieldMapper)) -> valueDecoder.decode(
-                  v,
-                  schema.getValueType,
-                  fieldMapper)
+                    .decode(k, schema, fieldMapper)
+                ) -> valueDecoder.decode(v, schema.getValueType, fieldMapper)
             }
           case other => sys.error("Unsupported map " + other)
         }
     }
 
-  implicit def mapEncoderUUID[V](
-                                  implicit encoder: Encoder[V]): Encoder[Map[UUID, V]] =
+  implicit def mapEncoderUUID[V](implicit encoder: Encoder[V]): Encoder[Map[UUID, V]] =
     new Encoder[Map[UUID, V]] {
 
       override def encode(
-                           map: Map[UUID, V],
-                           schema: Schema,
-                           fieldMapper: FieldMapper): java.util.Map[String, AnyRef] = {
+        map: Map[UUID, V],
+        schema: Schema,
+        fieldMapper: FieldMapper
+      ): java.util.Map[String, AnyRef] = {
         require(schema != null)
         val java = new util.HashMap[String, AnyRef]
         map.foreach {
           case (k, v) =>
-            java.put(k.toString,
-              encoder.encode(v, schema.getValueType, fieldMapper))
+            java.put(k.toString, encoder.encode(v, schema.getValueType, fieldMapper))
         }
         java
       }
@@ -673,7 +664,6 @@ object Serializers {
   class CASPersistAddMetadata extends AvroSerializer[CASTreeAddMetadata]
 
   class CASPersistInitialMetadata extends AvroSerializer[CASTreeInitialMetadata]
-
 
   class GetPersistLatestTree extends AvroSerializer[GetLatestTree]
 
