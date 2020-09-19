@@ -6,6 +6,7 @@ scala_library(
     name = "prism-serialization",
     srcs = [
         "derivations.scala",
+        "uservice/actorInfo.scala",
     ],
     plugins = ["@third_party//3rdparty/jvm/org/typelevel:kind_projector"],
     resources = ["resources/reference.conf"],

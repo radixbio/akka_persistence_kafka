@@ -5,6 +5,7 @@ package(
 scala_library(
     name = "gi-uservice-serializations",
     srcs = [
+        "actorInfo.scala",
         "protocol.scala",
     ],
     resources = ["resources/reference.conf"],

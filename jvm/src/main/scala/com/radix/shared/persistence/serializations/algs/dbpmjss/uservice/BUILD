@@ -1,6 +1,7 @@
 scala_library(
     name = "dbpmjss-uservice-serializations",
     srcs = [
+        "actorInfo.scala",
         "protocol.scala",
     ],
     resources = ["resources/reference.conf"],
