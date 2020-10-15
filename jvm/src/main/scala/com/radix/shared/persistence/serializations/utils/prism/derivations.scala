@@ -1,4 +1,4 @@
-package com.radix.shared.persistence.serializations.util.prism
+package com.radix.shared.persistence.serializations.utils.prism
 
 import java.util.UUID
 
@@ -597,7 +597,7 @@ object MainTest extends App {
 
 object Serializers {
 
-  import com.radix.shared.persistence.serializations.util.prism.derivations._
+  import com.radix.shared.persistence.serializations.utils.prism.derivations._
   import com.radix.shared.persistence.serializations.squants.schemas._
   import org.apache.avro.{Schema, SchemaBuilder}
   import com.sksamuel.avro4s.{Decoder, Encoder, FieldMapper}
