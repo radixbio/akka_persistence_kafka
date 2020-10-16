@@ -3,7 +3,7 @@ package(
 )
 
 scala_library(
-    name = "ltfexactive-serializations",
+    name = "tfexactive-serializations",
     srcs = [
         "actorInfo.scala",
         "defns.scala",
