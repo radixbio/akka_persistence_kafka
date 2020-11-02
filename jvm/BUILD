@@ -16,9 +16,8 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/tfexactive:tfexactive-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/sensors/elemental:elemental-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/squants:squants-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/bunny:bunny-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/prism:prism-serialization",
-         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/bunny:bunny-serialization",
-
     ],
     deps = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
@@ -34,8 +33,8 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/tfexactive:tfexactive-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/sensors/elemental:elemental-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/squants:squants-serializations",
-        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/prism:prism-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/bunny:bunny-serialization",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/prism:prism-serialization",
     ],
 )
 

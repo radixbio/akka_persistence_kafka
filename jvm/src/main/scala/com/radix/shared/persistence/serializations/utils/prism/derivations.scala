@@ -24,11 +24,12 @@ import squants.space.{Millilitres, Volume}
 
 import scala.collection.JavaConverters._
 import java.util
+
 import akka.persistence.SnapshotMetadata
 import com.radix.shared.persistence.AvroSerializer
 import com.radix.shared.util.prism.rpc.PrismProtocol.{CASMetadataFailure, CASMetadataResponse, CASMetadataSuccess, CASTree, CASTreeAddMetadata, CASTreeFailure, CASTreeInitialMetadata, CASTreeInsert, CASTreeMergeFluid, CASTreeMetadata, CASTreeMove, CASTreeRemove, CASTreeResponse, CASTreeSplitFluid, CASTreeSuccess, Find, FindSuccess, GetLatestMetadata, GetLatestTree, GetTree, GetTreeNoUUIDFound, GetTreeResponse, GetTreeSuccess, NoFindResponse, PrismMetadata, PrismWithMetadata, Request}
-
 import com.radix.shared.util.prism.rpc.PrismProtocol.{PrismMetadata, PrismWithMetadata}
+import com.radix.utils.prism.PrismNoMeta
 object derivations {
   implicit val fieldMapper: FieldMapper = DefaultFieldMapper
 
@@ -527,6 +528,24 @@ object derivations {
       }
 
       override def encode(t: Fix[Path], schema: Schema, fieldMapper: FieldMapper): AnyRef = t.cata(encoderAlg)
+    }
+  }
+
+  implicit val schemaForPrismNoMeta: SchemaFor[PrismNoMeta] = new SchemaFor[PrismNoMeta] {
+    override def schema(fieldMapper: FieldMapper): Schema = Schema.create(Schema.Type.RECORD)
+  }
+
+  implicit val decoderForPrismNoMeta: Decoder[PrismNoMeta] = new Decoder[PrismNoMeta] {
+    override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): PrismNoMeta = {
+      val (prism, uuid) = implicitly[Decoder[(Fix[Container], UUID)]].decode(value, schema, fieldMapper)
+      PrismNoMeta(prism, uuid)
+    }
+  }
+
+  implicit val encoderForPrismNoMeta: Encoder[PrismNoMeta] = new Encoder[PrismNoMeta] {
+    override def encode(t: PrismNoMeta, schema: Schema, fieldMapper: FieldMapper): AnyRef = {
+      val prismData = (t.prism, t.uuid)
+      implicitly[Encoder[(Fix[Container], UUID)]].encode(prismData, schema, fieldMapper)
     }
   }
 
