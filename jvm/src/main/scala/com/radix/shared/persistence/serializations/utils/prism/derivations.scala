@@ -26,6 +26,7 @@ import scala.collection.JavaConverters._
 import java.util
 
 import akka.persistence.SnapshotMetadata
+import com.radix.shared.defs.pipettingrobot.OpentronsPipetteModel.PipetteProperties
 import com.radix.shared.persistence.AvroSerializer
 import com.radix.shared.util.prism.rpc.PrismProtocol.{CASMetadataFailure, CASMetadataResponse, CASMetadataSuccess, CASTree, CASTreeAddMetadata, CASTreeFailure, CASTreeInitialMetadata, CASTreeInsert, CASTreeMergeFluid, CASTreeMetadata, CASTreeMove, CASTreeRemove, CASTreeResponse, CASTreeSplitFluid, CASTreeSuccess, Find, FindSuccess, GetLatestMetadata, GetLatestTree, GetTree, GetTreeNoUUIDFound, GetTreeResponse, GetTreeSuccess, NoFindResponse, PrismMetadata, PrismWithMetadata, Request}
 import com.radix.shared.util.prism.rpc.PrismProtocol.{PrismMetadata, PrismWithMetadata}
@@ -269,6 +270,17 @@ object derivations {
                 Encoder[PipetteTipData].encode(props, SchemaFor[PipetteTipData].schema(fieldMapper), fieldMapper)
               )
             }
+            case Pipettor(props, tipOriginalOffset, _, _, _) => {
+              tailRecord.put(
+                "props",
+                Encoder[PipetteProperties].encode(props, SchemaFor[PipetteProperties].schema(fieldMapper), fieldMapper)
+              )
+              tailRecord.put(
+                "tipOriginalOffset",
+                Encoder[Option[Offset]]
+                  .encode(tipOriginalOffset, SchemaFor[Option[Offset]].schema(fieldMapper), fieldMapper)
+              )
+            }
 
             case _ => Unit
           }
@@ -349,6 +361,13 @@ object derivations {
                   Decoder[PipetteTipData].decode(tailRecord.get("props"), AvroSchema[PipetteTipData], fieldMapper)
                 new PipetteTip[GenericRecord](offset, wid, props, contains, uuid)
               }
+              case "Pipettor" => {
+                val props =
+                  Decoder[PipetteProperties].decode(tailRecord.get("props"), AvroSchema[PipetteProperties], fieldMapper)
+                val tipOriginalOffset = Decoder[Option[Offset]]
+                  .decode(tailRecord.get("tipOriginalOffset"), AvroSchema[Option[Offset]], fieldMapper)
+                new Pipettor[GenericRecord](props, tipOriginalOffset, offset, contains, uuid)
+              }
             }
           tail
         }
@@ -421,6 +440,17 @@ object derivations {
                 .encode(props, AvroSchema[PipetteTipData], fieldMapper)
             )
           }
+          case Pipettor(props, tipOriginalOffset, _, _, _) => {
+            record.put(
+              "props",
+              Encoder[PipetteProperties].encode(props, SchemaFor[PipetteProperties].schema(fieldMapper), fieldMapper)
+            )
+            record.put(
+              "tipOriginalOffset",
+              Encoder[Option[Offset]]
+                .encode(tipOriginalOffset, SchemaFor[Option[Offset]].schema(fieldMapper), fieldMapper)
+            )
+          }
           case _ => Unit
         }
         record
@@ -460,6 +490,13 @@ object derivations {
               val wid = Decoder[WellID].decode(record.get("id"), AvroSchema[WellID], fieldMapper)
               val props = Decoder[PipetteTipData].decode(record.get("props"), AvroSchema[PipetteTipData], fieldMapper)
               new PipetteTip[GenericRecord](offset, wid, props, contains, uuid)
+            }
+            case "Pipettor" => {
+              val props =
+                Decoder[PipetteProperties].decode(record.get("props"), AvroSchema[PipetteProperties], fieldMapper)
+              val tipOriginalOffset =
+                Decoder[Option[Offset]].decode(record.get("tipOriginalOffset"), AvroSchema[Option[Offset]], fieldMapper)
+              new Pipettor[GenericRecord](props, tipOriginalOffset, offset, contains, uuid)
             }
             case "Plate" => {
               val props =
