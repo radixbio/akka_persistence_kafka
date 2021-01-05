@@ -7,21 +7,16 @@ import com.radix.shared.persistence.ActorRefSerializer._
 
 object defns {
   sealed trait Request
-  final case class SendMessage(id: String, msg: Message) extends Request
+  final case class SendMessage(replyTo: ActorRef[Feedback], id: String, msg: Message) extends Request
   final case class RefreshRecipients() extends Request
   final case class AddRecipient(id: String, params: Map[String, String]) extends Request
 
   sealed trait Message
-  final case class TextMsg(msg: String, title: String, returnResponse: Option[ActorRef[String]]) extends Message
-  final case class ButtonMsg(
-    msg: String,
-    title: String,
-    buttons: List[String],
-    returnButtonClick: ActorRef[Feedback],
-    returnResponse: Option[ActorRef[String]]
-  ) extends Message
+  final case class TextMsg(msg: String, title: String) extends Message
+  final case class ButtonMsg(msg: String, title: String, buttons: List[String]) extends Message
 
   sealed trait Feedback
+  final case object TextSent extends Feedback
   final case class ButtonClick(btn: String) extends Feedback
 
   class SendMessageSerializer(implicit as: ExtendedActorSystem) extends AvroSerializer[SendMessage]
