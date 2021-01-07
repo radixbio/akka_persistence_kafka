@@ -1,3 +1,5 @@
 package com.radix.shared.persistence.serializations.device_drivers.tfexactive
 
-object defns {}
+object defns {
+  trait TFExactiveRequest
+}

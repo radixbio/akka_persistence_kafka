@@ -6,10 +6,10 @@ import com.radix.shared.persistence.AvroSerializer
 import com.radix.shared.persistence.ActorRefSerializer._
 
 object defns {
-  sealed trait Request
-  final case class SendMessage(replyTo: ActorRef[Feedback], id: String, msg: Message) extends Request
-  final case class RefreshRecipients() extends Request
-  final case class AddRecipient(id: String, params: Map[String, String]) extends Request
+  sealed trait UserMessagingRequest
+  final case class SendMessage(replyTo: ActorRef[Feedback], id: String, msg: Message) extends UserMessagingRequest
+  final case class RefreshRecipients() extends UserMessagingRequest
+  final case class AddRecipient(id: String, params: Map[String, String]) extends UserMessagingRequest
 
   sealed trait Message
   final case class TextMsg(msg: String, title: String) extends Message

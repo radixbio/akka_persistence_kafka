@@ -1,8 +1,8 @@
 package com.radix.shared.persistence.serializations.device_drivers.messaging
 
 import akka.actor.typed.receptionist.ServiceKey
-import defns.Request
+import defns.UserMessagingRequest
 
 object actorInfo {
-  val skey = ServiceKey[Request]("messaging-service")
+  val skey = ServiceKey[UserMessagingRequest]("messaging-service")
 }
