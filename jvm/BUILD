@@ -8,7 +8,6 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/dbpmjss/uservice:dbpmjss-uservice-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/gi/uservice:gi-uservice-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/hmrpp/uservice:hmrpp-uservice-serializations",
-        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/common:driver-commons",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/elemental_radix_driver:elemental-radix-driver-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/ln2:ln2-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/messaging:messaging-driver-serializations",
@@ -17,10 +16,12 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/opentrons:opentrons-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/quantstudio:quantstudio-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/tfexactive:tfexactive-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/runtime:actor-discovery-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/sensors/elemental:elemental-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/squants:squants-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/bunny:bunny-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/prism:prism-serialization",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/common:driver-commons-serializations"
     ],
     deps = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
@@ -36,10 +37,12 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/opentrons:opentrons-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/quantstudio:quantstudio-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/tfexactive:tfexactive-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/runtime:actor-discovery-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/sensors/elemental:elemental-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/squants:squants-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/bunny:bunny-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/prism:prism-serialization",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/common:driver-commons-serializations"
     ],
 )
 

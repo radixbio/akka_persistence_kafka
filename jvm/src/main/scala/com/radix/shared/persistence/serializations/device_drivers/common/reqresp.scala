@@ -10,6 +10,10 @@ import com.radix.shared.persistence.serializations.device_drivers.common.respons
 object requests {
   import responses.DriverResponse
 
+  trait RequestWithReply[LR] {
+    val replyTo: Option[ActorRef[DriverResponse[LR]]]
+  }
+
   /**
    * A request which all drivers are equipped to handle
    */

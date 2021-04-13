@@ -3,7 +3,7 @@ package(
 )
 
 scala_library(
-    name = "driver-commons",
+    name = "driver-commons-serializations",
     srcs = [
         "reqresp.scala"
     ],

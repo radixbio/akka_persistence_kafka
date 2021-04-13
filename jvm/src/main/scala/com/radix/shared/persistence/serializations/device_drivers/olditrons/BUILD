@@ -12,6 +12,7 @@ scala_library(
     exports = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/elemental_radix_driver:elemental-radix-driver-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/common:driver-commons-serializations",
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
         "@third_party//3rdparty/jvm/io/circe:circe_core",
         "@third_party//3rdparty/jvm/org/scodec:scodec_core",
@@ -19,6 +20,7 @@ scala_library(
     deps = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/elemental_radix_driver:elemental-radix-driver-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/common:driver-commons-serializations",
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
         "@third_party//3rdparty/jvm/io/circe:circe_core",
         "@third_party//3rdparty/jvm/org/scodec:scodec_core",

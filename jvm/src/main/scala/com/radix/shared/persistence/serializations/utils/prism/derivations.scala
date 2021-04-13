@@ -87,7 +87,7 @@ object derivations {
   it is possible to generalize this, but it was easier to reorder the AST itself in the case that wrote this.
   TODO add support for field reordering to respect rolled-up field reference ordering
    */
-  implicit def SchemaForFix[F[_]: Functor](implicit ev: SchemaFor[F[REPLACE.type]]): SchemaFor[Fix[F]] = {
+  implicit def SchemaForFix[F[_]: Functor, Fx[_[_]]](implicit ev: SchemaFor[F[REPLACE.type]], lol: BirecursiveT[Fx]): SchemaFor[Fx[F]] = {
     val replaceNamespace = REPLACE.getClass.getName.split('$').head
     val replaceName =
       REPLACE.getClass.getSimpleName.replaceAllLiterally("$", "")
@@ -139,7 +139,7 @@ object derivations {
       .map(x => s"${x._1}.${x._2}")
       .mkString("", "\",\"", "\"]")
     val resultSchema =
-      new SchemaFor[Fix[F]] {
+      new SchemaFor[Fx[F]] {
         override def schema(fieldMapper: FieldMapper): Schema =
           new Schema.Parser()
             .setValidate(true)

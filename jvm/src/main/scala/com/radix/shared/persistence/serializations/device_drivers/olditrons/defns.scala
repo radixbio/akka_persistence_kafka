@@ -2,16 +2,30 @@ package com.radix.shared.persistence.serializations.device_drivers.olditrons
 
 import java.time.Instant
 
-import akka.actor.{ActorLogging, ActorRef, ExtendedActorSystem}
-import akka.event.LoggingAdapter
+import akka.actor.ExtendedActorSystem
+import akka.actor.typed.ActorRef
+import com.typesafe.config.ConfigFactory
+
 import com.radix.shared.persistence.AvroSerializer
 import com.radix.shared.persistence.ActorRefSerializer._
-import com.radix.shared.persistence.serializations.device_drivers.elemental_radix_driver.ElementalRadixDriverTypes.{ElementalSendable, ElemetalDriverable}
+import com.radix.shared.persistence.serializations.device_drivers.elemental_radix_driver.ElementalRadixDriverTypes.{ElementalDriverable, ElementalSendable}
 import io.circe.Json
 
 object defns {
 
-  case class OlditronsSummaryRequest(respondTo: ActorRef)
+  type ReplyToActor = ActorRef[OlditronsResponse]
+
+  sealed trait OlditronsRequest {
+    def replyTo: Option[ReplyToActor]
+  }
+  sealed trait OlditronsResponse
+  sealed trait OlditronsEvent
+
+  case class SummaryRequest(replyTo: Option[ReplyToActor]) extends OlditronsRequest
+  case class SummaryResponse(summary: OlditronsSummary) extends OlditronsResponse with ElementalSendable {
+    override def packets: List[ElementalDriverable] = List(summary)
+  }
+  case class SummaryGenerated(summary: OlditronsSummary, errors: List[String]) extends OlditronsEvent
 
   /**
    * These older Multitrons protocol devices only report temp and speed, it seems (n=1).
@@ -27,7 +41,8 @@ object defns {
     temp: Option[String],
     uidadd: String,
     time: Instant
-  ) extends ElemetalDriverable {
+  ) extends ElementalDriverable {
+
     override def toElementalJSON: Json = {
       val forjson: Map[String, Option[String]] = Map[String, Option[String]](
         "temperature" -> temp,
@@ -50,6 +65,7 @@ object defns {
   }
 
   object OlditronsSummary {
+
     def apply(
       unitID: Option[String],
       rpm: Option[String],
@@ -59,12 +75,9 @@ object defns {
     ): OlditronsSummary = new OlditronsSummary(unitID, rpm, temp, uidadd, time)
   }
 
-  case class OlditronsSend(sums: Seq[OlditronsSummary]) extends ElementalSendable {
-    override def packets: List[ElemetalDriverable] = sums.toList
-  }
-
-  class OlditronsSummaryRequestSerializer(implicit eas: ExtendedActorSystem)
-      extends AvroSerializer[OlditronsSummaryRequest]
+  class SummaryRequestSerializer(implicit eas: ExtendedActorSystem)
+      extends AvroSerializer[SummaryRequest]
   class OlditronsSummarySerializer extends AvroSerializer[OlditronsSummary]
-  class OlditronsSendSerializer extends AvroSerializer[OlditronsSend]
+  class SummaryResponseSerializer extends AvroSerializer[SummaryResponse]
+  class SummaryGeneratedSerializer extends AvroSerializer[SummaryGenerated]
 }

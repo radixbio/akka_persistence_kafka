@@ -5,9 +5,9 @@ package(
 scala_library(
     name = "elemental-radix-driver-serializations",
     srcs = [
-        "RadixDriver.scala",
+        "ElementalRadixDriverTypes.scala",
     ],
-    resources = ["resources/reference.conf"],
+    resources = [],
     exports = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/squants:squants-serializations",

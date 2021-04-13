@@ -13,7 +13,7 @@ object ActorRefSerializer {
   }
   implicit def EncoderForTypedActorRef[T]: Encoder[ActorRef[T]] = new Encoder[ActorRef[T]] {
     override def encode(t: ActorRef[T], schema: Schema, fieldMapper: FieldMapper): AnyRef = {
-      Serialization.serializedActorPath(t.toUntyped)
+      Serialization.serializedActorPath(t.toClassic)
     }
   }
   implicit def DecoderForTypedActorRef[T](implicit A: ExtendedActorSystem): Decoder[ActorRef[T]] =
@@ -35,4 +35,26 @@ object ActorRefSerializer {
       A.provider.resolveActorRef(value.toString)
     }
   }
+  implicit def SchemaForNothingActorRef: SchemaFor[ActorRef[_]] = new SchemaFor[ActorRef[_]] {
+    override def schema(fieldMapper: FieldMapper): Schema = SchemaBuilder.builder.stringType()
+  }
+  implicit def EncoderForNothingActorRef: Encoder[ActorRef[_]] = new Encoder[ActorRef[_]] {
+    override def encode(t: ActorRef[_], schema: Schema, fieldMapper: FieldMapper): AnyRef = {
+      Serialization.serializedActorPath(t.toClassic)
+    }
+  }
+//  implicit def DecoderForNothingActorRef[T](implicit A: ExtendedActorSystem): Decoder[ActorRef[T]] =
+//    new Decoder[ActorRef[T]] {
+//      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): ActorRef[T] = {
+//        A.provider.resolveActorRef(value.toString)
+//      }
+//    }
+//  implicit def DecoderForNothingActorRef(implicit A: ExtendedActorSystem): Decoder[ActorRef[_]] =
+//    new Decoder[ActorRef[_]] {
+//      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): ActorRef[_] = {
+//        A.provider.resolveActorRef(value.toString)
+//      }
+//    }
+
+
 }
