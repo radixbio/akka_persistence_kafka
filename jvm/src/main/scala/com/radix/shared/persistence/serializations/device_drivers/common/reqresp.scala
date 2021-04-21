@@ -22,7 +22,7 @@ object requests {
 
     def reply(msg: CoreDriverResponse): Unit = {
       replyTo match {
-        case None => // Ignore
+        case None        => // Ignore
         case Some(actor) => actor ! responses.Core(msg)
       }
     }
@@ -46,6 +46,7 @@ object requests {
 }
 
 object responses {
+
   /**
    * A response which all drivers can send
    */
