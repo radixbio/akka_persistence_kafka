@@ -6,6 +6,7 @@ import org.apache.avro.{Schema, SchemaBuilder}
 import akka.actor.{ExtendedActorSystem, ActorRef => UActorRef}
 import akka.actor.typed.scaladsl.adapter._
 import akka.serialization.Serialization
+import akka.stream.{SourceRef, StreamRefResolver}
 
 object ActorRefSerializer {
   implicit def SchemaForTypedActorRef[T]: SchemaFor[ActorRef[T]] = new SchemaFor[ActorRef[T]] {
@@ -35,6 +36,7 @@ object ActorRefSerializer {
       A.provider.resolveActorRef(value.toString)
     }
   }
+
   implicit def SchemaForNothingActorRef: SchemaFor[ActorRef[_]] = new SchemaFor[ActorRef[_]] {
     override def schema(fieldMapper: FieldMapper): Schema = SchemaBuilder.builder.stringType()
   }
@@ -43,18 +45,21 @@ object ActorRefSerializer {
       Serialization.serializedActorPath(t.toClassic)
     }
   }
-//  implicit def DecoderForNothingActorRef[T](implicit A: ExtendedActorSystem): Decoder[ActorRef[T]] =
-//    new Decoder[ActorRef[T]] {
-//      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): ActorRef[T] = {
-//        A.provider.resolveActorRef(value.toString)
-//      }
-//    }
-//  implicit def DecoderForNothingActorRef(implicit A: ExtendedActorSystem): Decoder[ActorRef[_]] =
-//    new Decoder[ActorRef[_]] {
-//      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): ActorRef[_] = {
-//        A.provider.resolveActorRef(value.toString)
-//      }
-//    }
 
+  implicit def SchemaForSourceRef[T]: SchemaFor[SourceRef[T]] = new SchemaFor[SourceRef[T]] {
+    override def schema(fieldMapper: FieldMapper): Schema = SchemaBuilder.builder.stringType()
+  }
+
+  implicit def EncoderForSourceRef[T](implicit eas: ExtendedActorSystem): Encoder[SourceRef[T]] =
+    new Encoder[SourceRef[T]] {
+      override def encode(ref: SourceRef[T], schema: Schema, fieldMapper: FieldMapper): AnyRef =
+        StreamRefResolver.get(eas).toSerializationFormat(ref)
+    }
+  implicit def DecoderForSourceRef[T](implicit eas: ExtendedActorSystem): Decoder[SourceRef[T]] =
+    new Decoder[SourceRef[T]] {
+      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): SourceRef[T] =
+        StreamRefResolver.get(eas).resolveSourceRef(value.toString)
+
+    }
 
 }

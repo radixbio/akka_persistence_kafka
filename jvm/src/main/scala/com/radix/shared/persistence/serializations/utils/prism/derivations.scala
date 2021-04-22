@@ -14,7 +14,7 @@ import org.apache.avro.{Schema, SchemaBuilder}
 import org.apache.avro.generic.{GenericData, GenericRecord}
 import org.apache.avro.util.Utf8
 import scalaz.{Cofree, Functor}
-import ujson.{read, Js}
+import ujson.{Js, read}
 
 import scala.collection.JavaConverters._
 import com.radix.shared.persistence.serializations.squants.schemas._
@@ -31,6 +31,7 @@ import com.radix.shared.persistence.AvroSerializer
 import com.radix.shared.util.prism.rpc.PrismProtocol.{CASMetadataFailure, CASMetadataResponse, CASMetadataSuccess, CASTree, CASTreeAddMetadata, CASTreeFailure, CASTreeInitialMetadata, CASTreeInsert, CASTreeMergeFluid, CASTreeMetadata, CASTreeMove, CASTreeRemove, CASTreeResponse, CASTreeSplitFluid, CASTreeSuccess, Find, FindSuccess, GetLatestMetadata, GetLatestTree, GetTree, GetTreeNoUUIDFound, GetTreeResponse, GetTreeSuccess, NoFindResponse, PrismMetadata, PrismWithMetadata, Request}
 import com.radix.shared.util.prism.rpc.PrismProtocol.{PrismMetadata, PrismWithMetadata}
 import com.radix.utils.prism.PrismNoMeta
+import shapeless.the
 object derivations {
   implicit val fieldMapper: FieldMapper = DefaultFieldMapper
 
@@ -569,7 +570,7 @@ object derivations {
   }
 
   implicit val schemaForPrismNoMeta: SchemaFor[PrismNoMeta] = new SchemaFor[PrismNoMeta] {
-    override def schema(fieldMapper: FieldMapper): Schema = Schema.create(Schema.Type.RECORD)
+    override def schema(fieldMapper: FieldMapper): Schema = the[SchemaFor[(Fix[Container], UUID)]].schema(fieldMapper)
   }
 
   implicit val decoderForPrismNoMeta: Decoder[PrismNoMeta] = new Decoder[PrismNoMeta] {
@@ -585,6 +586,7 @@ object derivations {
       implicitly[Encoder[(Fix[Container], UUID)]].encode(prismData, schema, fieldMapper)
     }
   }
+
 
 }
 object MainTest extends App {
@@ -660,6 +662,8 @@ object Serializers {
   import com.sksamuel.avro4s.SchemaFor
 
   import scala.collection.JavaConverters._
+
+  class PrismNoMetaSerializer extends AvroSerializer[PrismNoMeta]
 
   class CASPersistAvroTree extends AvroSerializer[CASTree]
 

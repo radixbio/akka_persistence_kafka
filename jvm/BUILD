@@ -5,8 +5,11 @@ scala_library(
     exports = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-query",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/dbpmjss:dbpmjss-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/dbpmjss/uservice:dbpmjss-uservice-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/gi:gi-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/gi/uservice:gi-uservice-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/hmrpp:hmrpp-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/hmrpp/uservice:hmrpp-uservice-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/elemental_radix_driver:elemental-radix-driver-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/ln2:ln2-serializations",
@@ -27,8 +30,11 @@ scala_library(
     deps = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-query",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/dbpmjss:dbpmjss-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/dbpmjss/uservice:dbpmjss-uservice-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/gi:gi-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/gi/uservice:gi-uservice-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/hmrpp:hmrpp-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/hmrpp/uservice:hmrpp-uservice-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/elemental_radix_driver:elemental-radix-driver-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/ln2:ln2-serializations",
