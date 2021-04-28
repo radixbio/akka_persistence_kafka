@@ -6,13 +6,14 @@ scala_library(
     name = "squants-serializations",
     srcs = [
         "schemas.scala",
+        "units.scala",
     ],
     exports = [
-        "@third_party//3rdparty/jvm/org/typelevel:squants",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
+        "@third_party//3rdparty/jvm/org/typelevel:squants",
     ],
     deps = [
-        "@third_party//3rdparty/jvm/org/typelevel:squants",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
+        "@third_party//3rdparty/jvm/org/typelevel:squants",
     ],
 )

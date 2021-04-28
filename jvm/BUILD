@@ -11,10 +11,12 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/gi/uservice:gi-uservice-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/hmrpp:hmrpp-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/hmrpp/uservice:hmrpp-uservice-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/common:driver-commons-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/elemental_radix_driver:elemental-radix-driver-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/eve:eve-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/ln2:ln2-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/messaging:messaging-driver-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/minifors2:minifors2-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/multitrons:multitrons-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/olditrons:olditrons-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/opentrons:opentrons-serializations",
@@ -26,7 +28,6 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/bunny:bunny-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/healthcheck:healthcheck-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/prism:prism-serialization",
-        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/common:driver-commons-serializations"
     ],
     deps = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
@@ -37,10 +38,12 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/gi/uservice:gi-uservice-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/hmrpp:hmrpp-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/hmrpp/uservice:hmrpp-uservice-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/common:driver-commons-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/elemental_radix_driver:elemental-radix-driver-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/eve:eve-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/ln2:ln2-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/messaging:messaging-driver-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/minifors2:minifors2-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/multitrons:multitrons-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/olditrons:olditrons-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/opentrons:opentrons-serializations",
@@ -52,7 +55,6 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/bunny:bunny-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/healthcheck:healthcheck-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/prism:prism-serialization",
-        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/common:driver-commons-serializations"
     ],
 )
 
