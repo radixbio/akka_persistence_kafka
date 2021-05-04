@@ -3,19 +3,23 @@ package(
 )
 
 scala_library(
-    name = "elemental-radix-driver-serializations",
+    name = "elemental-bridge-serializations",
     srcs = [
-        "ElementalRadixDriverTypes.scala",
+        "defns.scala",
     ],
     resources = [],
     exports = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
-        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/squants:squants-serializations",
         "@third_party//3rdparty/jvm/io/circe:circe_core",
+        "@third_party//3rdparty/jvm/org/apache/kafka:connect_api",
+        "@third_party//3rdparty/jvm/org/apache/kafka:connect_runtime",
+        "@third_party//3rdparty/jvm/org/apache/kafka:connect_json"
     ],
     deps = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
-        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/squants:squants-serializations",
         "@third_party//3rdparty/jvm/io/circe:circe_core",
+        "@third_party//3rdparty/jvm/org/apache/kafka:connect_api",
+        "@third_party//3rdparty/jvm/org/apache/kafka:connect_runtime",
+        "@third_party//3rdparty/jvm/org/apache/kafka:connect_json"
     ],
 )

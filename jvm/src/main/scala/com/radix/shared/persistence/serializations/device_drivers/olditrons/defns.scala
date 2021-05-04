@@ -8,7 +8,7 @@ import com.typesafe.config.ConfigFactory
 
 import com.radix.shared.persistence.AvroSerializer
 import com.radix.shared.persistence.ActorRefSerializer._
-import com.radix.shared.persistence.serializations.device_drivers.elemental_radix_driver.ElementalRadixDriverTypes.{ElementalDriverable, ElementalSendable}
+import com.radix.shared.persistence.serializations.device_drivers.elemental.gateway.ElementalRadixDriverTypes.{ElementalDriverable, ElementalSendable}
 import io.circe.Json
 
 object defns {

@@ -11,7 +11,7 @@ import scodec.bits.BitVector
 import com.radix.shared.persistence.AvroSerializer
 import com.radix.shared.persistence.ActorRefSerializer._
 import com.radix.shared.persistence.serializations.device_drivers.common.responses.DriverResponse
-import com.radix.shared.persistence.serializations.device_drivers.elemental_radix_driver.ElementalRadixDriverTypes._
+import com.radix.shared.persistence.serializations.device_drivers.elemental.gateway.ElementalRadixDriverTypes._
 
 object defns {
 

@@ -1,4 +1,4 @@
-package com.radix.shared.persistence.serializations.device_drivers.elemental_radix_driver
+package com.radix.shared.persistence.serializations.device_drivers.elemental.gateway
 
 import akka.actor.typed.ActorRef
 import com.typesafe.config.ConfigFactory
