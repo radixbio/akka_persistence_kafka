@@ -11,13 +11,24 @@ object datatypes {
   type DurationL = Long
   type TimeL = Long
   type NoBuffer = SortedMap[TimeL, (DurationL, Operation)] //start, blocking, operation
-  final implicit object schemaForNoBuffer extends SchemaFor[NoBuffer] with Encoder[NoBuffer] with Decoder[NoBuffer] {
-    override def encode(t: NoBuffer, schema: Schema, fieldMapper: FieldMapper): AnyRef =
-      the[Encoder[List[(TimeL, (DurationL, Operation))]]].encode(t.toList, schema, fieldMapper)
-    override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): NoBuffer =
-      SortedMap(the[Decoder[List[(TimeL, (DurationL, Operation))]]].decode(value, schema, fieldMapper): _*)
-    override def schema(fieldMapper: FieldMapper): Schema =
-      the[SchemaFor[List[(TimeL, (DurationL, Operation))]]].schema(fieldMapper)
+  final implicit object schemaForNoBuffer extends SchemaFor[NoBuffer] {
+      override def schema: Schema =
+      the[SchemaFor[List[(TimeL, (DurationL, Operation))]]].schema
+    override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
+
+  }
+  final implicit object encoderForNoBuffer extends  Encoder[NoBuffer]  {
+    override def encode(t: NoBuffer): AnyRef =
+      the[Encoder[List[(TimeL, (DurationL, Operation))]]].encode(t.toList)
+    override def schemaFor: SchemaFor[NoBuffer] = schemaForNoBuffer
+
+  }
+
+  final implicit object decoderForNoBuffer extends Decoder[NoBuffer] {
+      override def decode(value: Any): NoBuffer =
+      SortedMap(the[Decoder[List[(TimeL, (DurationL, Operation))]]].decode(value): _*)
+    override def schemaFor: SchemaFor[NoBuffer] = schemaForNoBuffer
+
   }
 
   type WithBuffer = (NoBuffer, List[NoBuffer]) // the main machine, and the set of buffers
@@ -27,25 +38,13 @@ object datatypes {
 
   final case class OperationIndex(id: Int) extends AnyVal // Dependency order
   final object OperationIndex {
-    implicit object schema extends SchemaFor[OperationIndex] with Encoder[OperationIndex] with Decoder[OperationIndex] {
-      override def schema(fieldMapper: FieldMapper): Schema = the[SchemaFor[Int]].schema(fieldMapper)
-      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): OperationIndex =
-        OperationIndex(the[Decoder[Int]].decode(value, schema, fieldMapper))
-      override def encode(t: OperationIndex, schema: Schema, fieldMapper: FieldMapper): AnyRef =
-        the[Encoder[Int]].encode(t.id, schema, fieldMapper)
-    }
+    implicit val schema = SchemaFor[OperationIndex]
 
   }
 
   final case class JobIndex(id: Int) extends AnyVal
   final object JobIndex {
-    implicit object schema extends SchemaFor[JobIndex] with Encoder[JobIndex] with Decoder[JobIndex] {
-      override def schema(fieldMapper: FieldMapper): Schema = the[SchemaFor[Int]].schema(fieldMapper)
-      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): JobIndex =
-        JobIndex(the[Decoder[Int]].decode(value, schema, fieldMapper))
-      override def encode(t: JobIndex, schema: Schema, fieldMapper: FieldMapper): AnyRef =
-        the[Encoder[Int]].encode(t.id, schema, fieldMapper)
-    }
+    implicit val schema = SchemaFor[JobIndex]
   }
   final case class Job(name: String, ops: List[(OperationIndex, Operation)])
   sealed trait JobReq
@@ -83,25 +82,34 @@ object datatypes {
   final case class Machine(name: String, bufferType: BufferType, replicas: Int = 1)
   final case class MachineIndex(id: Int) extends AnyVal
   final object MachineIndex {
-    implicit object schema extends SchemaFor[MachineIndex] with Encoder[MachineIndex] with Decoder[MachineIndex] {
-      override def schema(fieldMapper: FieldMapper): Schema = the[SchemaFor[Int]].schema(fieldMapper)
-      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): MachineIndex =
-        MachineIndex(the[Decoder[Int]].decode(value, schema, fieldMapper))
-      override def encode(t: MachineIndex, schema: Schema, fieldMapper: FieldMapper): AnyRef =
-        the[Encoder[Int]].encode(t.id, schema, fieldMapper)
+    implicit val schema = SchemaFor[MachineIndex]
+  }
+  final implicit def MidxMapAvroSchema[T: SchemaFor: Encoder: Decoder]
+    : SchemaFor[Map[MachineIndex, T]]  = {
+    new SchemaFor[Map[MachineIndex, T]]  {
+      override def schema: Schema =
+        the[SchemaFor[List[(MachineIndex, T)]]].schema
+      override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
     }
   }
-  final implicit def MidxMapAvro[T: SchemaFor: Encoder: Decoder]
-    : SchemaFor[Map[MachineIndex, T]] with Encoder[Map[MachineIndex, T]] with Decoder[Map[MachineIndex, T]] = {
-    new SchemaFor[Map[MachineIndex, T]] with Encoder[Map[MachineIndex, T]] with Decoder[Map[MachineIndex, T]] {
-      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): Map[MachineIndex, T] =
-        the[Decoder[List[(MachineIndex, T)]]].decode(value, schema, fieldMapper).toMap
+  final implicit def MidxMapAvroEncode[T: SchemaFor: Encoder: Decoder]
+  : Encoder[Map[MachineIndex, T]]= {
+    new Encoder[Map[MachineIndex, T]]{
 
-      override def encode(t: Map[MachineIndex, T], schema: Schema, fieldMapper: FieldMapper): AnyRef =
-        the[Encoder[List[(MachineIndex, T)]]].encode(t.toList, schema, fieldMapper)
+      override def encode(t: Map[MachineIndex, T]): AnyRef =
+        the[Encoder[List[(MachineIndex, T)]]].encode(t.toList)
+      override def schemaFor: SchemaFor[Map[MachineIndex, T]] = MidxMapAvroSchema[T]
 
-      override def schema(fieldMapper: FieldMapper): Schema =
-        the[SchemaFor[List[(MachineIndex, T)]]].schema(fieldMapper)
+    }
+
+  }
+  final implicit def MidxMapAvroDecode[T: SchemaFor: Encoder: Decoder]
+  : Decoder[Map[MachineIndex, T]] = {
+    new Decoder[Map[MachineIndex, T]] {
+      override def decode(value: Any): Map[MachineIndex, T] =
+        the[Decoder[List[(MachineIndex, T)]]].decode(value).toMap
+      override def schemaFor: SchemaFor[Map[MachineIndex, T]] = MidxMapAvroSchema[T]
+
     }
   }
 

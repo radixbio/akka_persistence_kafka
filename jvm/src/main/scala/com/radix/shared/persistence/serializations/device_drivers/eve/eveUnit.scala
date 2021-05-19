@@ -410,28 +410,33 @@ object EveUnit {
     }
 
   implicit object Schema extends SchemaFor[EveUnit] {
-    override def schema(fieldMapper: FieldMapper): Schema =
+    override def schema: Schema =
       SchemaBuilder
         .builder("com.radix.shared.persistence.serializations.device_drivers.eve")
         .record("EveUnit")
         .fields()
         .requiredString("unit")
         .endRecord()
+    override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
   }
 
   implicit object AvroEncoder extends Encoder[EveUnit] {
-    def encode(t: EveUnit, schema: Schema, fieldMapper: FieldMapper): AnyRef = {
+    def encode(t: EveUnit): AnyRef = {
       val record = new GenericData.Record(schema)
       record.put("unit", t.fullName)
       record
     }
+    override def schemaFor: SchemaFor[EveUnit] = Schema
+
   }
 
   implicit object AvroDecoder extends Decoder[EveUnit] {
-    def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): EveUnit = {
+    def decode(value: Any): EveUnit = {
       val record = value.asInstanceOf[GenericRecord]
       parseEveUnit(record.get("unit").toString)
     }
+    override def schemaFor: SchemaFor[EveUnit] = Schema
+
   }
 
 }

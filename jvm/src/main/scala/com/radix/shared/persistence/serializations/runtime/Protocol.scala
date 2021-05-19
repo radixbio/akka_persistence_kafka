@@ -31,22 +31,28 @@ object serializers {
   import Protocol._
 
   implicit object MapSchema extends SchemaFor[Map[ServiceKey[_], Set[ActorRef[_]]]] {
-    override def schema(fieldMapper: FieldMapper): Schema = implicitly[SchemaFor[Map[String, Set[ActorRef[_]]]]].schema(fieldMapper)
+    override def schema: Schema = implicitly[SchemaFor[Map[String, Set[ActorRef[_]]]]].schema
+    override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
+
   }
   implicit object MapEncoder extends Encoder[Map[ServiceKey[_], Set[ActorRef[_]]]] {
-    override def encode(t: Map[ServiceKey[_], Set[ActorRef[_]]], schema: Schema, fieldMapper: FieldMapper): AnyRef = {
+    override def encode(t: Map[ServiceKey[_], Set[ActorRef[_]]]): AnyRef = {
       val S = implicitly[Encoder[Map[String, Set[ActorRef[_]]]]]
-      S.encode(t.map({case ((k, v)) => (k.id, v)}), schema, fieldMapper)
+      S.encode(t.map({case ((k, v)) => (k.id, v)}))
     }
+
+    override def schemaFor: SchemaFor[Map[ServiceKey[_], Set[ActorRef[_]]]] = MapSchema
   }
   implicit def MapDecoder(implicit as: ExtendedActorSystem): Decoder[Map[ServiceKey[_], Set[ActorRef[_]]]] = new Decoder[Map[ServiceKey[_], Set[ActorRef[_]]]] {
-    override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): Map[ServiceKey[_], Set[ActorRef[_]]] = {
+    override def decode(value: Any): Map[ServiceKey[_], Set[ActorRef[_]]] = {
       //DecoderForTypedActorRef[_]
       //implicitly[Decoder[ActorRef[Int]]]
       //val S = implicitly[Decoder[Map[String, Set[ActorRef[_]]]]]
       //S.decode(value, schema, fieldMapper).map({case (k, v) => (ServiceKey(k), v)})
       ???
     }
+    override def schemaFor: SchemaFor[Map[ServiceKey[_], Set[ActorRef[_]]]] = MapSchema
+
   }
 
 

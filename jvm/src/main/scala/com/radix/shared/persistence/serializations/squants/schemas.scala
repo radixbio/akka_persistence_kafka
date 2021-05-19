@@ -12,7 +12,7 @@ import squants.time.Frequency
 object schemas {
 
   implicit object SchemaForTemp extends SchemaFor[Temperature] {
-    override def schema(fieldMapper: FieldMapper): Schema =
+    override def schema: Schema =
       SchemaBuilder
         .builder("org.typelevel.squants")
         .record("temperature")
@@ -20,10 +20,11 @@ object schemas {
         .requiredDouble("temperature")
         .requiredString("unit")
         .endRecord()
+    override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
   }
 
   implicit object SchemaForLength extends SchemaFor[Length] {
-    override def schema(fieldMapper: FieldMapper): Schema =
+    override def schema: Schema =
       SchemaBuilder
         .builder("org.typelevel.squants")
         .record("length")
@@ -31,10 +32,12 @@ object schemas {
         .requiredDouble("length")
         .requiredString("unit")
         .endRecord()
+    override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
+
   }
 
   implicit object SchemaForVolumeFlow extends SchemaFor[VolumeFlow] {
-    override def schema(fieldMapper: FieldMapper): Schema =
+    override def schema: Schema =
       SchemaBuilder
         .builder("org.typelevel.squants")
         .record("volumeflow")
@@ -42,10 +45,11 @@ object schemas {
         .requiredDouble("volumeflow")
         .requiredString("unit")
         .endRecord()
+    override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
   }
 
   implicit object SchemaForVolume extends SchemaFor[Volume] {
-    override def schema(fieldMapper: FieldMapper): Schema =
+    override def schema: Schema =
       SchemaBuilder
         .builder("org.typelevel.squants")
         .record("volume")
@@ -53,10 +57,12 @@ object schemas {
         .requiredDouble("volume")
         .requiredString("unit")
         .endRecord()
+    override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
+
   }
 
   implicit object SchemaForFrequency extends SchemaFor[Frequency] {
-    override def schema(fieldMapper: FieldMapper): Schema =
+    override def schema: Schema =
       SchemaBuilder
         .builder("org.typelevel.squants")
         .record("frequency")
@@ -64,19 +70,22 @@ object schemas {
         .requiredDouble("frequency")
         .requiredString("unit")
         .endRecord()
+    override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
   }
 
   implicit object TemperatureEncoder extends Encoder[Temperature] {
-    override def encode(t: Temperature, schema: Schema, fieldMapper: FieldMapper): AnyRef = {
+    override def encode(t: Temperature): AnyRef = {
       val record = new GenericData.Record(schema)
       record.put("temperature", t.value)
       record.put("unit", t.unit.symbol)
       record
     }
+    override def schemaFor: SchemaFor[Temperature] = SchemaForTemp
+
   }
 
   implicit object TemperatureDecoder extends Decoder[Temperature] {
-    override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): Temperature = {
+    override def decode(value: Any): Temperature = {
       val record = value.asInstanceOf[GenericRecord]
       val parsed = record.get("temperature").toString + " " + record.get("unit").toString
       Temperature(parsed).getOrElse(
@@ -85,19 +94,21 @@ object schemas {
         )
       )
     }
+    override def schemaFor: SchemaFor[Temperature] = SchemaForTemp
   }
 
   implicit object LengthEncoder extends Encoder[Length] {
-    override def encode(t: Length, schema: Schema, fieldMapper: FieldMapper): AnyRef = {
+    override def encode(t: Length): AnyRef = {
       val record = new GenericData.Record(schema)
       record.put("length", t.value)
       record.put("unit", t.unit.symbol)
       record
     }
+    override def schemaFor: SchemaFor[Length] = SchemaForLength
   }
 
   implicit object LengthDecoder extends Decoder[Length] {
-    override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): Length = {
+    override def decode(value: Any): Length = {
       val record = value.asInstanceOf[GenericRecord]
       val parsed = record.get("length").toString + " " + record.get("unit").toString
       Length(parsed).getOrElse(
@@ -106,19 +117,21 @@ object schemas {
         )
       )
     }
+    override def schemaFor: SchemaFor[Length] = SchemaForLength
   }
 
   implicit object VolumeEncoder extends Encoder[Volume] {
-    override def encode(t: Volume, schema: Schema, fieldMapper: FieldMapper): AnyRef = {
+    override def encode(t: Volume): AnyRef = {
       val record = new GenericData.Record(schema)
       record.put("volume", t.value)
       record.put("unit", t.unit.symbol)
       record
     }
+    override def schemaFor: SchemaFor[Volume] = SchemaForVolume
   }
 
   implicit object VolumeDecoder extends Decoder[Volume] {
-    override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): Volume = {
+    override def decode(value: Any): Volume = {
       val record = value.asInstanceOf[GenericRecord]
       val parsed = record.get("volume").toString + " " + record.get("unit").toString
       Volume(parsed).getOrElse(
@@ -127,19 +140,21 @@ object schemas {
         )
       )
     }
+    override def schemaFor: SchemaFor[Volume] = SchemaForVolume
   }
 
   implicit object VolumeFlowEncoder extends Encoder[VolumeFlow] {
-    override def encode(t: VolumeFlow, schema: Schema, fieldMapper: FieldMapper): AnyRef = {
+     def encode(t: VolumeFlow): AnyRef = {
       val record = new GenericData.Record(schema)
       record.put("volumeflow", t.value)
       record.put("unit", t.unit.symbol)
       record
     }
+    override def schemaFor: SchemaFor[VolumeFlow] = SchemaForVolumeFlow
   }
 
   implicit object VolumeFlowDecoder extends Decoder[VolumeFlow] {
-    override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): VolumeFlow = {
+    override def decode(value: Any): VolumeFlow = {
       val record = value.asInstanceOf[GenericRecord]
       val doubleValue = record.get("volumeflow").toString.toDouble
       val unit = record.get("unit").toString
@@ -154,20 +169,23 @@ object schemas {
         }
       )
     }
+    override def schemaFor: SchemaFor[VolumeFlow] = SchemaForVolumeFlow
   }
 
 
   implicit object FrequencyEncoder extends Encoder[Frequency] {
-    override def encode(t: Frequency, schema: Schema, fieldMapper: FieldMapper): AnyRef = {
+    override def encode(t: Frequency): AnyRef = {
       val record = new GenericData.Record(schema)
       record.put("frequency", t.value)
       record.put("unit", t.unit.symbol)
       record
     }
+
+    override def schemaFor: SchemaFor[Frequency] = SchemaForFrequency
   }
 
   implicit object FrequencyDecoder extends Decoder[Frequency] {
-    override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): Frequency = {
+    override def decode(value: Any): Frequency = {
       val record = value.asInstanceOf[GenericRecord]
       val parsed = record.get("frequency").toString + " " + record.get("unit").toString
       Frequency(parsed).getOrElse(
@@ -176,6 +194,8 @@ object schemas {
         )
       )
     }
+
+    override def schemaFor: SchemaFor[Frequency] = SchemaForFrequency
   }
 
 }

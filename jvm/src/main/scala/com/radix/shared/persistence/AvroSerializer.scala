@@ -28,7 +28,7 @@ class AvroSerializer[T: SchemaFor: ClassTag: Decoder: Encoder]()(implicit ev: T 
     val baos = new ByteArrayOutputStream()
     o match {
       case mf: T =>
-        val os = AvroOutputStream.data[T].to(baos).build(AvroSchema[T])
+        val os = AvroOutputStream.data[T].to(baos).build()
         os.write(mf)
         os.flush()
         os.close()

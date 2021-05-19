@@ -193,42 +193,44 @@ object Serializers {
 
   implicit def mapSchemaForLong[V](implicit schemaFor: SchemaFor[V]): SchemaFor[Map[Long, V]] = {
     new SchemaFor[Map[Long, V]] {
-      override def schema(fieldMapper: FieldMapper): Schema =
-        SchemaBuilder.map().values(schemaFor.schema(fieldMapper))
+      override def schema: Schema =
+        SchemaBuilder.map().values(schemaFor.schema)
+      override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
+
     }
   }
 
-  implicit def mapDecoderLong[T](implicit valueDecoder: Decoder[T]): Decoder[Map[Long, T]] =
+  implicit def mapDecoderLong[T](implicit valueDecoder: Decoder[T],  schemaForImp: SchemaFor[T]): Decoder[Map[Long, T]] =
     new Decoder[Map[Long, T]] {
 
-      override def decode(value: Any, schema: Schema, fieldMapper: FieldMapper): Map[Long, T] =
+      override def decode(value: Any): Map[Long, T] =
         value match {
           case map: java.util.Map[_, _] =>
             map.asScala.toMap.map {
               case (k, v) =>
                 implicitly[Decoder[Long]]
-                  .decode(k, schema, fieldMapper) -> valueDecoder.decode(v, schema.getValueType, fieldMapper)
+                  .decode(k) -> valueDecoder.decode(v)
             }
           case other => sys.error("Unsupported map " + other)
         }
+      override def schemaFor: SchemaFor[Map[Long, T]] = mapSchemaForLong[T]
+
     }
 
-  implicit def mapEncoderLong[V](implicit encoder: Encoder[V]): Encoder[Map[Long, V]] =
+  implicit def mapEncoderLong[V](implicit encoder: Encoder[V],  schemaForImp: SchemaFor[V]): Encoder[Map[Long, V]] =
     new Encoder[Map[Long, V]] {
 
-      override def encode(
-        map: Map[Long, V],
-        schema: Schema,
-        fieldMapper: FieldMapper
-      ): java.util.Map[String, AnyRef] = {
+      override def encode(map: Map[Long, V]): java.util.Map[String, AnyRef] = {
         require(schema != null)
         val java = new util.HashMap[String, AnyRef]
         map.foreach {
           case (k, v) =>
-            java.put(k.toString, encoder.encode(v, schema.getValueType, fieldMapper))
+            java.put(k.toString, encoder.encode(v))
         }
         java
       }
+      override def schemaFor: SchemaFor[Map[Long, V]] = mapSchemaForLong[V]
+
     }
 
   class ScheduleGenResponseSerializer extends AvroSerializer[ScheduleGenResponse]
