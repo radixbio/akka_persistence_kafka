@@ -4,7 +4,6 @@ import akka.actor.ExtendedActorSystem
 import akka.actor.typed.ActorRef
 import com.radix.shared.persistence.ActorRefSerializer._
 import com.radix.shared.persistence.AvroSerializer
-import com.radix.shared.persistence.serializations.device_drivers.common.responses.DriverResponse
 import com.radix.shared.persistence.serializations.squants.schemas._
 import com.radix.shared.persistence.serializations.squants.units.LitresPerMinute
 import squants.mass.Grams
@@ -42,7 +41,7 @@ object defns {
     /**
      * The actor to send the bioreactor's response to.
      */
-    val replyTo: Option[ActorRef[DriverResponse[Minifors2Response]]]
+    val replyTo: Option[ActorRef[Minifors2Response]]
   }
 
 
@@ -346,7 +345,7 @@ object defns {
   /**
    * Requests to get all data on the bioreactor's parameters.
    */
-  case class SummaryRequest(replyTo: Option[ActorRef[DriverResponse[Minifors2Response]]])
+  case class SummaryRequest(replyTo: Option[ActorRef[Minifors2Response]])
     extends Minifors2Request
 
   class SummaryRequestSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[SummaryRequest]
@@ -421,7 +420,7 @@ object defns {
     val setPoint: Float
   }
 
-  case class WriteTemperature(replyTo: Option[ActorRef[DriverResponse[Minifors2Response]]], temperatureSetPoint: Temperature)
+  case class WriteTemperature(replyTo: Option[ActorRef[Minifors2Response]], temperatureSetPoint: Temperature)
     extends SetPointWriteRequest {
     val parameterType: ParameterType = ParameterTypes.Temperature
     val setPoint: Float = temperatureSetPoint.to(Celsius).toFloat
@@ -429,7 +428,7 @@ object defns {
 
   class WriteTemperatureSerializer(implicit extendedActorSystem: ExtendedActorSystem) extends AvroSerializer[WriteTemperature]
 
-  case class WriteTotalFlow(replyTo: Option[ActorRef[DriverResponse[Minifors2Response]]], flowSetPoint: VolumeFlow)
+  case class WriteTotalFlow(replyTo: Option[ActorRef[Minifors2Response]], flowSetPoint: VolumeFlow)
     extends SetPointWriteRequest {
     val parameterType: ParameterType = ParameterTypes.TotalFlow
     val setPoint: Float = flowSetPoint.to(LitresPerMinute).toFloat
@@ -437,7 +436,7 @@ object defns {
 
   class WriteTotalFlowSerializer(implicit extendedActorSystem: ExtendedActorSystem) extends AvroSerializer[WriteTotalFlow]
 
-  case class WriteGasMix(replyTo: Option[ActorRef[DriverResponse[Minifors2Response]]], percentO2: Float) extends
+  case class WriteGasMix(replyTo: Option[ActorRef[Minifors2Response]], percentO2: Float) extends
     SetPointWriteRequest {
     val parameterType: ParameterType = ParameterTypes.GasMix
     val setPoint: Float = percentO2
@@ -445,7 +444,7 @@ object defns {
 
   class WriteGasMixSerializer(implicit extendedActorSystem: ExtendedActorSystem) extends AvroSerializer[WriteGasMix]
 
-  case class WritePump(replyTo: Option[ActorRef[DriverResponse[Minifors2Response]]], pump: PumpParameterType, percentDeliveryRate: Float)
+  case class WritePump(replyTo: Option[ActorRef[Minifors2Response]], pump: PumpParameterType, percentDeliveryRate: Float)
     extends SetPointWriteRequest {
     val parameterType: ParameterType = pump
     val setPoint: Float = percentDeliveryRate
@@ -453,7 +452,7 @@ object defns {
 
   class WritePumpSerializer(implicit extendedActorSystem: ExtendedActorSystem) extends AvroSerializer[WritePump]
 
-  case class WriteStirrerSpeed(replyTo: Option[ActorRef[DriverResponse[Minifors2Response]]], frequency: Frequency)
+  case class WriteStirrerSpeed(replyTo: Option[ActorRef[Minifors2Response]], frequency: Frequency)
     extends SetPointWriteRequest {
     val parameterType: ParameterType = ParameterTypes.StirrerSpeed
     val setPoint: Float = frequency.toRevolutionsPerMinute.toFloat
@@ -461,14 +460,14 @@ object defns {
 
   class WriteStirrerSpeedSerializer(implicit extendedActorSystem: ExtendedActorSystem) extends AvroSerializer[WriteStirrerSpeed]
 
-  case class WritePH(replyTo: Option[ActorRef[DriverResponse[Minifors2Response]]], pH: Float) extends SetPointWriteRequest {
+  case class WritePH(replyTo: Option[ActorRef[Minifors2Response]], pH: Float) extends SetPointWriteRequest {
     val parameterType: ParameterType = ParameterTypes.PH
     val setPoint: Float = pH
   }
 
   class WritePHSerializer(implicit extendedActorSystem: ExtendedActorSystem) extends AvroSerializer[WritePH]
 
-  case class WritePO2(replyTo: Option[ActorRef[DriverResponse[Minifors2Response]]], percentO2: Float) extends SetPointWriteRequest {
+  case class WritePO2(replyTo: Option[ActorRef[Minifors2Response]], percentO2: Float) extends SetPointWriteRequest {
     val parameterType: ParameterType = ParameterTypes.PO2
     val setPoint: Float = percentO2
   }

@@ -5,7 +5,8 @@ package(
 scala_library(
     name = "driver-commons-serializations",
     srcs = [
-        "reqresp.scala"
+        "reqresp.scala",
+        "DriverSerializer.scala"
     ],
     resources = ["resources/reference.conf"],
     exports = [

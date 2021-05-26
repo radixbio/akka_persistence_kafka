@@ -10,7 +10,6 @@ import scodec.bits.BitVector
 
 import com.radix.shared.persistence.AvroSerializer
 import com.radix.shared.persistence.ActorRefSerializer._
-import com.radix.shared.persistence.serializations.device_drivers.common.responses.DriverResponse
 import com.radix.shared.persistence.serializations.device_drivers.elemental.gateway.ElementalRadixDriverTypes._
 
 object defns {
@@ -35,7 +34,7 @@ object defns {
     override val uuidDefaultPostfix: String = "-C"
   }
 
-  type ReplyToActor = ActorRef[DriverResponse[MultitronsResponse]]
+  type ReplyToActor = ActorRef[MultitronsResponse]
 
   sealed trait MultitronsRequest {
     def replyTo: Option[ReplyToActor]

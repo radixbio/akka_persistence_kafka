@@ -6,7 +6,6 @@ import akka.actor.ExtendedActorSystem
 import akka.actor.typed.ActorRef
 import com.radix.shared.persistence.ActorRefSerializer._
 import com.radix.shared.persistence.AvroSerializer
-import com.radix.shared.persistence.serializations.device_drivers.common.responses.DriverResponse
 import com.radix.shared.persistence.serializations.device_drivers.eve.EveUnit.parseEveUnit
 import io.circe
 import io.circe._
@@ -41,7 +40,7 @@ object defns {
     /**
      * Actor to send response to once request goes through.
      */
-    val replyTo: Option[ActorRef[DriverResponse[EveResponse]]]
+    val replyTo: Option[ActorRef[EveResponse]]
   }
 
   /**
@@ -67,7 +66,7 @@ object defns {
    * Gets all the batches stored in Eve.
    */
   case class GetAllBatches(
-    replyTo: Option[ActorRef[DriverResponse[EveResponse]]]
+    replyTo: Option[ActorRef[EveResponse]]
   ) extends EveGetRequest
 
   class GetAllBatchesSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[GetAllBatches]
@@ -75,14 +74,14 @@ object defns {
   /**
    * Get a specific batch stored in Eve
    */
-  case class GetBatchByID(replyTo: Option[ActorRef[DriverResponse[EveResponse]]], batchID: String) extends EveGetRequest
+  case class GetBatchByID(replyTo: Option[ActorRef[EveResponse]], batchID: String) extends EveGetRequest
 
   class GetBatchByIDSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[GetBatchByID]
 
   /**
    * Get all of the datapoints associated with a batch.
    */
-  case class GetBatchDatapoints(replyTo: Option[ActorRef[DriverResponse[EveResponse]]], batchID: String)
+  case class GetBatchDatapoints(replyTo: Option[ActorRef[EveResponse]], batchID: String)
       extends EveGetRequest
 
   class GetBatchDatapointsSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[GetBatchDatapoints]
@@ -90,7 +89,7 @@ object defns {
   /**
    * Create a batch with the given information. The name of the batch must be unique.
    */
-  case class CreateBatch(replyTo: Option[ActorRef[DriverResponse[EveResponse]]], body: PostableEveBatch)
+  case class CreateBatch(replyTo: Option[ActorRef[EveResponse]], body: PostableEveBatch)
       extends EvePostRequest[PostableEveBatch]
 
   class CreateBatchSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[CreateBatch]
@@ -99,7 +98,7 @@ object defns {
    * Request to create a parameter for the given batch.
    */
   case class CreateBatchParameter(
-    replyTo: Option[ActorRef[DriverResponse[EveResponse]]],
+    replyTo: Option[ActorRef[EveResponse]],
     batchID: String,
     body: PostableEveParameter
   ) extends EvePostRequest[PostableEveParameter]
@@ -110,7 +109,7 @@ object defns {
    * Adds values to a batch's parameter of the Eve API.
    */
   case class AddBatchParameterValue(
-    replyTo: Option[ActorRef[DriverResponse[EveResponse]]],
+    replyTo: Option[ActorRef[EveResponse]],
     batchID: String,
     parameterID: String,
     body: List[PostableEveDatapoint]

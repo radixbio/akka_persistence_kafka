@@ -101,3 +101,13 @@ scala_test(
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_testkit",
     ],
 )
+
+scala_binary(
+    name = "debug",
+    srcs = [],
+    main_class = "ammonite.Main",
+    deps = [
+        ":persistence", # whatever you want to run
+        "@third_party//3rdparty/jvm/com/lihaoyi:ammonite_2_12_8",
+    ],
+)
