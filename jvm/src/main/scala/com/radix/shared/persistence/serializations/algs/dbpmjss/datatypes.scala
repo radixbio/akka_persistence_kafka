@@ -12,12 +12,12 @@ object datatypes {
   type TimeL = Long
   type NoBuffer = SortedMap[TimeL, (DurationL, Operation)] //start, blocking, operation
   final implicit object schemaForNoBuffer extends SchemaFor[NoBuffer] {
-      override def schema: Schema =
+    override def schema: Schema =
       the[SchemaFor[List[(TimeL, (DurationL, Operation))]]].schema
     override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
 
   }
-  final implicit object encoderForNoBuffer extends  Encoder[NoBuffer]  {
+  final implicit object encoderForNoBuffer extends Encoder[NoBuffer] {
     override def encode(t: NoBuffer): AnyRef =
       the[Encoder[List[(TimeL, (DurationL, Operation))]]].encode(t.toList)
     override def schemaFor: SchemaFor[NoBuffer] = schemaForNoBuffer
@@ -25,7 +25,7 @@ object datatypes {
   }
 
   final implicit object decoderForNoBuffer extends Decoder[NoBuffer] {
-      override def decode(value: Any): NoBuffer =
+    override def decode(value: Any): NoBuffer =
       SortedMap(the[Decoder[List[(TimeL, (DurationL, Operation))]]].decode(value): _*)
     override def schemaFor: SchemaFor[NoBuffer] = schemaForNoBuffer
 
@@ -84,17 +84,15 @@ object datatypes {
   final object MachineIndex {
     implicit val schema = SchemaFor[MachineIndex]
   }
-  final implicit def MidxMapAvroSchema[T: SchemaFor: Encoder: Decoder]
-    : SchemaFor[Map[MachineIndex, T]]  = {
-    new SchemaFor[Map[MachineIndex, T]]  {
+  final implicit def MidxMapAvroSchema[T: SchemaFor: Encoder: Decoder]: SchemaFor[Map[MachineIndex, T]] = {
+    new SchemaFor[Map[MachineIndex, T]] {
       override def schema: Schema =
         the[SchemaFor[List[(MachineIndex, T)]]].schema
       override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
     }
   }
-  final implicit def MidxMapAvroEncode[T: SchemaFor: Encoder: Decoder]
-  : Encoder[Map[MachineIndex, T]]= {
-    new Encoder[Map[MachineIndex, T]]{
+  final implicit def MidxMapAvroEncode[T: SchemaFor: Encoder: Decoder]: Encoder[Map[MachineIndex, T]] = {
+    new Encoder[Map[MachineIndex, T]] {
 
       override def encode(t: Map[MachineIndex, T]): AnyRef =
         the[Encoder[List[(MachineIndex, T)]]].encode(t.toList)
@@ -103,8 +101,7 @@ object datatypes {
     }
 
   }
-  final implicit def MidxMapAvroDecode[T: SchemaFor: Encoder: Decoder]
-  : Decoder[Map[MachineIndex, T]] = {
+  final implicit def MidxMapAvroDecode[T: SchemaFor: Encoder: Decoder]: Decoder[Map[MachineIndex, T]] = {
     new Decoder[Map[MachineIndex, T]] {
       override def decode(value: Any): Map[MachineIndex, T] =
         the[Decoder[List[(MachineIndex, T)]]].decode(value).toMap

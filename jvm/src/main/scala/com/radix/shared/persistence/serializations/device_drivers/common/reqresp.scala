@@ -28,7 +28,7 @@ object requests {
   case class Local[D](request: D)(implicit val ct: ClassTag[_ <: D]) extends DriverRequest[D]
 
   implicit def creqToReq[L](creq: CoreDriverRequest): DriverRequest[L] = Core(creq)
-  implicit def lreqToReq[L, R <: L : ClassTag](lreq: R): DriverRequest[L] = Local[L](lreq)(implicitly[ClassTag[R]])
+  implicit def lreqToReq[L, R <: L: ClassTag](lreq: R): DriverRequest[L] = Local[L](lreq)(implicitly[ClassTag[R]])
 
   case class HealthCheck(replyTo: Option[ActorRef[CoreDriverResponse]]) extends CoreDriverRequest
 

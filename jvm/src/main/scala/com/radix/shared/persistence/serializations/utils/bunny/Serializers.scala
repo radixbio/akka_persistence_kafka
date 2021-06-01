@@ -200,7 +200,7 @@ object Serializers {
     }
   }
 
-  implicit def mapDecoderLong[T](implicit valueDecoder: Decoder[T],  schemaForImp: SchemaFor[T]): Decoder[Map[Long, T]] =
+  implicit def mapDecoderLong[T](implicit valueDecoder: Decoder[T], schemaForImp: SchemaFor[T]): Decoder[Map[Long, T]] =
     new Decoder[Map[Long, T]] {
 
       override def decode(value: Any): Map[Long, T] =
@@ -217,7 +217,7 @@ object Serializers {
 
     }
 
-  implicit def mapEncoderLong[V](implicit encoder: Encoder[V],  schemaForImp: SchemaFor[V]): Encoder[Map[Long, V]] =
+  implicit def mapEncoderLong[V](implicit encoder: Encoder[V], schemaForImp: SchemaFor[V]): Encoder[Map[Long, V]] =
     new Encoder[Map[Long, V]] {
 
       override def encode(map: Map[Long, V]): java.util.Map[String, AnyRef] = {

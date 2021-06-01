@@ -75,8 +75,7 @@ object defns {
     ): OlditronsSummary = new OlditronsSummary(unitID, rpm, temp, uidadd, time)
   }
 
-  class SummaryRequestSerializer(implicit eas: ExtendedActorSystem)
-      extends AvroSerializer[SummaryRequest]
+  class SummaryRequestSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[SummaryRequest]
   class OlditronsSummarySerializer extends AvroSerializer[OlditronsSummary]
   class SummaryResponseSerializer extends AvroSerializer[SummaryResponse]
   class SummaryGeneratedSerializer extends AvroSerializer[SummaryGenerated]

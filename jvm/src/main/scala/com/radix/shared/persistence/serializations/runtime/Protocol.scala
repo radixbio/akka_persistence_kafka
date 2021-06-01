@@ -17,7 +17,7 @@ object Protocol {
   sealed trait Response
   final case class AtLeastOne[T](skey: ServiceKey[T], replyTo: ActorRef[AtLeastOneResponse[T]]) extends Request
   final case class AtLeastOneMulti(skeys: Set[ServiceKey[_]], replyTo: ActorRef[AtLeastOneMultiResponse])
-    extends Request
+      extends Request
   final case class Read[T](skey: ServiceKey[T], replyTo: ActorRef[ReadResponse[T]]) extends Request
   final case class ReadMulti(skeys: Set[ServiceKey[_]], replyTo: ActorRef[ReadMultiResponse]) extends Request
   final case class AtLeastOneResponse[T](skey: Set[ActorRef[T]]) extends Response
@@ -38,34 +38,31 @@ object serializers {
   implicit object MapEncoder extends Encoder[Map[ServiceKey[_], Set[ActorRef[_]]]] {
     override def encode(t: Map[ServiceKey[_], Set[ActorRef[_]]]): AnyRef = {
       val S = implicitly[Encoder[Map[String, Set[ActorRef[_]]]]]
-      S.encode(t.map({case ((k, v)) => (k.id, v)}))
+      S.encode(t.map({ case ((k, v)) => (k.id, v) }))
     }
 
     override def schemaFor: SchemaFor[Map[ServiceKey[_], Set[ActorRef[_]]]] = MapSchema
   }
-  implicit def MapDecoder(implicit as: ExtendedActorSystem): Decoder[Map[ServiceKey[_], Set[ActorRef[_]]]] = new Decoder[Map[ServiceKey[_], Set[ActorRef[_]]]] {
-    override def decode(value: Any): Map[ServiceKey[_], Set[ActorRef[_]]] = {
-      //DecoderForTypedActorRef[_]
-      //implicitly[Decoder[ActorRef[Int]]]
-      //val S = implicitly[Decoder[Map[String, Set[ActorRef[_]]]]]
-      //S.decode(value, schema, fieldMapper).map({case (k, v) => (ServiceKey(k), v)})
-      ???
+  implicit def MapDecoder(implicit as: ExtendedActorSystem): Decoder[Map[ServiceKey[_], Set[ActorRef[_]]]] =
+    new Decoder[Map[ServiceKey[_], Set[ActorRef[_]]]] {
+      override def decode(value: Any): Map[ServiceKey[_], Set[ActorRef[_]]] = {
+        //DecoderForTypedActorRef[_]
+        //implicitly[Decoder[ActorRef[Int]]]
+        //val S = implicitly[Decoder[Map[String, Set[ActorRef[_]]]]]
+        //S.decode(value, schema, fieldMapper).map({case (k, v) => (ServiceKey(k), v)})
+        ???
+      }
+      override def schemaFor: SchemaFor[Map[ServiceKey[_], Set[ActorRef[_]]]] = MapSchema
+
     }
-    override def schemaFor: SchemaFor[Map[ServiceKey[_], Set[ActorRef[_]]]] = MapSchema
 
-  }
-
-
-  class AtLeastOneAvro(implicit as: ExtendedActorSystem)  extends AvroSerializer[AtLeastOne[Any]]
-  class AtLeastOneMultiAvro(implicit as: ExtendedActorSystem)  extends AvroSerializer[AtLeastOneMulti]
-  class ReadAvro(implicit as: ExtendedActorSystem)  extends AvroSerializer[Read[Any]]
-  class ReadMultiAvro(implicit as: ExtendedActorSystem)  extends AvroSerializer[ReadMulti]
-  class AtLeastOneResponseAvro(implicit as: ExtendedActorSystem)  extends AvroSerializer[AtLeastOneResponse[Any]]
-  class AtLeastOneMultiResponseAvro(implicit as: ExtendedActorSystem)  extends AvroSerializer[AtLeastOneMultiResponse]
-  class ReadResponseAvro(implicit as: ExtendedActorSystem)  extends AvroSerializer[ReadResponse[Any]]
-  class ReadMultiResponseAvro(implicit as: ExtendedActorSystem)  extends AvroSerializer[ReadMultiResponse]
-
-
-
+  class AtLeastOneAvro(implicit as: ExtendedActorSystem) extends AvroSerializer[AtLeastOne[Any]]
+  class AtLeastOneMultiAvro(implicit as: ExtendedActorSystem) extends AvroSerializer[AtLeastOneMulti]
+  class ReadAvro(implicit as: ExtendedActorSystem) extends AvroSerializer[Read[Any]]
+  class ReadMultiAvro(implicit as: ExtendedActorSystem) extends AvroSerializer[ReadMulti]
+  class AtLeastOneResponseAvro(implicit as: ExtendedActorSystem) extends AvroSerializer[AtLeastOneResponse[Any]]
+  class AtLeastOneMultiResponseAvro(implicit as: ExtendedActorSystem) extends AvroSerializer[AtLeastOneMultiResponse]
+  class ReadResponseAvro(implicit as: ExtendedActorSystem) extends AvroSerializer[ReadResponse[Any]]
+  class ReadMultiResponseAvro(implicit as: ExtendedActorSystem) extends AvroSerializer[ReadMultiResponse]
 
 }

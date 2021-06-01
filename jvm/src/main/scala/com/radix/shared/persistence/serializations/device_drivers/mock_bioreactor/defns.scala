@@ -17,8 +17,7 @@ object defns {
 
   case class RequestResponseEvent(req: MockBioreactorRequest, res: MockBioreactorResponse) extends MockBioreactorEvent
 
-  class RequestEventSerializer(implicit eas: ExtendedActorSystem) extends
-    AvroSerializer[RequestResponseEvent]
+  class RequestEventSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[RequestResponseEvent]
 
   sealed trait MockBioreactorRequest {
     val replyTo: Option[ActorRef[MockBioreactorResponse]]
@@ -30,8 +29,13 @@ object defns {
 
   class MockBioreactorResponseSerializer extends AvroSerializer[MockBioreactorResponse]
 
-  case class SetSetpoints(replyTo: Option[ActorRef[MockBioreactorResponse]], temperature: Option[Temperature],
-                          stirrerSpeed: Option[Frequency], pH: Option[Double], oxygenPercentage: Option[Double]) extends MockBioreactorRequest
+  case class SetSetpoints(
+    replyTo: Option[ActorRef[MockBioreactorResponse]],
+    temperature: Option[Temperature],
+    stirrerSpeed: Option[Frequency],
+    pH: Option[Double],
+    oxygenPercentage: Option[Double]
+  ) extends MockBioreactorRequest
 
   class SetSetpointsSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[SetSetpoints]
 
@@ -45,7 +49,7 @@ object defns {
   class GetSetpointsSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[GetSetpoints]
 
   case class Setpoints(temperature: Temperature, stirrerSpeed: Frequency, pH: Double, oxygenPercentage: Double)
-   extends MockBioreactorResponse
+      extends MockBioreactorResponse
 
   class SetpointsSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[Setpoints]
 
@@ -57,8 +61,8 @@ object defns {
 
   class PumpSetpointsSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[PumpSetpoints]
 
-  case class SetPumpSetpoint(replyTo: Option[ActorRef[MockBioreactorResponse]],
-                             pumpName: String, setpoint: VolumeFlow) extends MockBioreactorRequest
+  case class SetPumpSetpoint(replyTo: Option[ActorRef[MockBioreactorResponse]], pumpName: String, setpoint: VolumeFlow)
+      extends MockBioreactorRequest
 
   class SetPumpSetpointSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[SetPumpSetpoint]
 

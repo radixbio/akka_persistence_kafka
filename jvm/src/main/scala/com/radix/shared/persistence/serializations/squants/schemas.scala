@@ -144,7 +144,7 @@ object schemas {
   }
 
   implicit object VolumeFlowEncoder extends Encoder[VolumeFlow] {
-     def encode(t: VolumeFlow): AnyRef = {
+    def encode(t: VolumeFlow): AnyRef = {
       val record = new GenericData.Record(schema)
       record.put("volumeflow", t.value)
       record.put("unit", t.unit.symbol)
@@ -171,7 +171,6 @@ object schemas {
     }
     override def schemaFor: SchemaFor[VolumeFlow] = SchemaForVolumeFlow
   }
-
 
   implicit object FrequencyEncoder extends Encoder[Frequency] {
     override def encode(t: Frequency): AnyRef = {

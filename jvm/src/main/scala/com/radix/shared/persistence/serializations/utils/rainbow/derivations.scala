@@ -53,8 +53,7 @@ object derivations {
   implicit def mapEncoderUUID[V](implicit encoder: Encoder[V], schemaForImp: SchemaFor[V]): Encoder[Map[UUID, V]] =
     new Encoder[Map[UUID, V]] {
 
-      override def encode( map: Map[UUID, V]
-                         ): java.util.Map[String, AnyRef] = {
+      override def encode(map: Map[UUID, V]): java.util.Map[String, AnyRef] = {
         require(schema != null)
         val java = new util.HashMap[String, AnyRef]
         map.foreach {
@@ -86,7 +85,8 @@ object derivations {
                 (
                   implicitly[Decoder[String]]
                     .decode(k)
-                ).toInt -> valueDecoder.decode(v)
+                  )
+                  .toInt -> valueDecoder.decode(v)
             }
           case other => sys.error("Unsupported map " + other)
         }
@@ -96,8 +96,7 @@ object derivations {
   implicit def mapEncoderInt[V](implicit encoder: Encoder[V], schemaForImp: SchemaFor[V]): Encoder[Map[Int, V]] =
     new Encoder[Map[Int, V]] {
 
-      override def encode(map: Map[Int, V],
-                         ): java.util.Map[String, AnyRef] = {
+      override def encode(map: Map[Int, V]): java.util.Map[String, AnyRef] = {
         require(schema != null)
         val java = new util.HashMap[String, AnyRef]
         map.foreach {
@@ -110,24 +109,23 @@ object derivations {
     }
 }
 
-
 //From here down, all is horrible. Each of this schemas and encoders are so large
 //that if they are in the same object, they go over the jvm limit of 64kb per file
 //they are separated out of necessity
-object fixers1{
+object fixers1 {
   import derivations._
   val schema: SchemaFor[LabMeta[Metadata]] = SchemaFor[LabMeta[Metadata]] //workaround to get things working
   val enc: Encoder[LabMeta[Metadata]] = Encoder[LabMeta[Metadata]] //workaround to get things working
   val dec: Decoder[LabMeta[Metadata]] = Decoder[LabMeta[Metadata]] //workaround to get things working
 }
-object fixers2{
+object fixers2 {
   import implicitFixers1._
   import derivations._
   val schema: SchemaFor[RainbowMetaSerialized] = SchemaFor[RainbowMetaSerialized] //workaround to get things working
   val enc: Encoder[RainbowMetaSerialized] = Encoder[RainbowMetaSerialized] //workaround to get things working
   val dec: Decoder[RainbowMetaSerialized] = Decoder[RainbowMetaSerialized] //workaround to get things working
 }
-object fixers2_0{
+object fixers2_0 {
   import implicitFixers1._
   import implicitFixers2._
   import derivations._
@@ -135,7 +133,7 @@ object fixers2_0{
   val dec: Decoder[RainbowModifyCommand] = Decoder[RainbowModifyCommand] //workaround to get api actor working
   val schema: SchemaFor[RainbowModifyCommand] = SchemaFor[RainbowModifyCommand] //workaround to get api actor working
 }
-object fixers2_00{
+object fixers2_00 {
   import implicitFixers1._
   import implicitFixers2._
   import derivations._
@@ -143,16 +141,17 @@ object fixers2_00{
   val dec: Decoder[ValidReverse] = Decoder[ValidReverse] //workaround to get api actor working
   val schema: SchemaFor[ValidReverse] = SchemaFor[ValidReverse] //workaround to get api actor working
 }
-object fixers4{
+object fixers4 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
   import derivations._
   val enc: Encoder[RainbowCommandAndReverse] = Encoder[RainbowCommandAndReverse] //workaround to get api actor working
   val dec: Decoder[RainbowCommandAndReverse] = Decoder[RainbowCommandAndReverse] //workaround to get api actor working
-  val schema: SchemaFor[RainbowCommandAndReverse] = SchemaFor[RainbowCommandAndReverse] //workaround to get api actor working
+  val schema
+    : SchemaFor[RainbowCommandAndReverse] = SchemaFor[RainbowCommandAndReverse] //workaround to get api actor working
 }
-object fixers5{
+object fixers5 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
@@ -162,7 +161,7 @@ object fixers5{
   val dec: Decoder[UpdateRainbow] = Decoder[UpdateRainbow] //workaround to get api actor working
   val schema: SchemaFor[UpdateRainbow] = SchemaFor[UpdateRainbow] //workaround to get api actor working
 }
-object fixers6{
+object fixers6 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
@@ -174,7 +173,7 @@ object fixers6{
   val schema: SchemaFor[URainbowEvent] = SchemaFor[URainbowEvent] //workaround to get api actor working
 }
 
-object fixers7_11{
+object fixers7_11 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
@@ -186,10 +185,11 @@ object fixers7_11{
   import implicitFixers6._
   import derivations._
 
-  val enc1: Encoder[RainbowHistoricalResponse] = Encoder[RainbowHistoricalResponse] //workaround to get api actor working
+  val enc1
+    : Encoder[RainbowHistoricalResponse] = Encoder[RainbowHistoricalResponse] //workaround to get api actor working
 }
 
-object fixers7_12{
+object fixers7_12 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
@@ -201,10 +201,11 @@ object fixers7_12{
   import implicitFixers6._
   import derivations._
 
-  val dec1: Decoder[RainbowHistoricalResponse] = Decoder[RainbowHistoricalResponse] //workaround to get api actor working
+  val dec1
+    : Decoder[RainbowHistoricalResponse] = Decoder[RainbowHistoricalResponse] //workaround to get api actor working
 }
 
-object fixers7_13{
+object fixers7_13 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
@@ -216,10 +217,11 @@ object fixers7_13{
   import implicitFixers6._
   import derivations._
 
-  val schema1: SchemaFor[RainbowHistoricalResponse] = SchemaFor[RainbowHistoricalResponse] //workaround to get api actor working
+  val schema1
+    : SchemaFor[RainbowHistoricalResponse] = SchemaFor[RainbowHistoricalResponse] //workaround to get api actor working
 }
 
-object fixers7_21{
+object fixers7_21 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
@@ -234,7 +236,7 @@ object fixers7_21{
   val enc2: Encoder[RainbowHistoricalResponseWithParents] = Encoder[RainbowHistoricalResponseWithParents] //workaround to get api actor working
 
 }
-object fixers7_22{
+object fixers7_22 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
@@ -249,7 +251,7 @@ object fixers7_22{
   val dec2: Decoder[RainbowHistoricalResponseWithParents] = Decoder[RainbowHistoricalResponseWithParents] //workaround to get api actor working
 
 }
-object fixers7_23{
+object fixers7_23 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
@@ -264,7 +266,7 @@ object fixers7_23{
   val schema2: SchemaFor[RainbowHistoricalResponseWithParents] = SchemaFor[RainbowHistoricalResponseWithParents] //workaround to get api actor working
 }
 
-object fixers8_11{
+object fixers8_11 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
@@ -279,7 +281,7 @@ object fixers8_11{
 
   val enc1: Encoder[RainbowHistoryResponse] = Encoder[RainbowHistoryResponse] //workaround to get api actor working
 }
-object fixers8_12{
+object fixers8_12 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
@@ -295,7 +297,7 @@ object fixers8_12{
   val dec1: Decoder[RainbowHistoryResponse] = Decoder[RainbowHistoryResponse] //workaround to get api actor working
 
 }
-object fixers8_13{
+object fixers8_13 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
@@ -308,11 +310,12 @@ object fixers8_13{
   import implicitFixers7._
   import derivations._
 
-  val schema1: SchemaFor[RainbowHistoryResponse] = SchemaFor[RainbowHistoryResponse] //workaround to get api actor working
+  val schema1
+    : SchemaFor[RainbowHistoryResponse] = SchemaFor[RainbowHistoryResponse] //workaround to get api actor working
 
 }
 
-object fixers8_21{
+object fixers8_21 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
@@ -326,7 +329,7 @@ object fixers8_21{
   import derivations._
   val enc2: Encoder[RainbowHistoryWithParentResponse] = Encoder[RainbowHistoryWithParentResponse] //workaround to get api actor working
 }
-object fixers8_22{
+object fixers8_22 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
@@ -341,7 +344,7 @@ object fixers8_22{
   val dec2: Decoder[RainbowHistoryWithParentResponse] = Decoder[RainbowHistoryWithParentResponse] //workaround to get api actor working
 
 }
-object fixers8_23{
+object fixers8_23 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
@@ -357,23 +360,24 @@ object fixers8_23{
 
 }
 
-
-object fixers2_1{
+object fixers2_1 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
   import derivations._
-  val enc: Encoder[URainbowResponse] = Encoder[RainbowActorProtocol.URainbowResponse] //workaround to get api actor working
+  val enc
+    : Encoder[URainbowResponse] = Encoder[RainbowActorProtocol.URainbowResponse] //workaround to get api actor working
 }
-object fixers2_2{
+object fixers2_2 {
   import implicitFixers1._
   import implicitFixers2._
   import derivations._
   import implicitFixers2_0._
-  val dec: Decoder[URainbowResponse] = Decoder[RainbowActorProtocol.URainbowResponse] //workaround to get api actor working
+  val dec
+    : Decoder[URainbowResponse] = Decoder[RainbowActorProtocol.URainbowResponse] //workaround to get api actor working
 }
 
-object fixers2_3{
+object fixers2_3 {
   import implicitFixers2_0._
   import implicitFixers1._
   import implicitFixers2._
@@ -382,7 +386,7 @@ object fixers2_3{
 //  val dec: Decoder[URainbowCommand] = Decoder[URainbowCommand] //workaround to get api actor working
 }
 
-object fixers3{
+object fixers3 {
   import implicitFixers1._
   import implicitFixers2._
   import implicitFixers2_0._
@@ -390,21 +394,21 @@ object fixers3{
   import implicitFixers2_3._
   import derivations._
   val schema1: SchemaFor[URainbowResponse] = SchemaFor[RainbowActorProtocol.URainbowResponse] //workaround to get api actor working
-  val schema2: SchemaFor[URainbowCommand] = SchemaFor[RainbowActorProtocol.URainbowCommand] //workaround to get api actor working
+  val schema2
+    : SchemaFor[URainbowCommand] = SchemaFor[RainbowActorProtocol.URainbowCommand] //workaround to get api actor working
 }
 
-
-object implicitFixers1{
+object implicitFixers1 {
   implicit val schLabMeta = fixers1.schema
   implicit val encLabMeta = fixers1.enc
   implicit val decLabMeta = fixers1.dec
 }
-object implicitFixers2{
+object implicitFixers2 {
   implicit val schRainbowMeta = fixers2.schema
   implicit val encRainbowMeta = fixers2.enc
   implicit val decRainbowMeta = fixers2.dec
 }
-object implicitFixers2_0{
+object implicitFixers2_0 {
   implicit val encMod = fixers2_0.enc
   implicit val decMod = fixers2_0.dec
   implicit val schMod = fixers2_0.schema
@@ -413,15 +417,15 @@ object implicitFixers2_0{
   implicit val decReverse = fixers2_00.dec
   implicit val schReverse = fixers2_00.schema
 }
-object implicitFixers2_1{
+object implicitFixers2_1 {
   implicit val encResp = fixers2_1.enc
   implicit val decResp = fixers2_2.dec
 }
-object implicitFixers2_3{
+object implicitFixers2_3 {
   implicit val encCommand = fixers2_3.enc
 
 }
-object implicitFixers3{
+object implicitFixers3 {
   implicit val schResponse = fixers3.schema1
   implicit val schCommand = fixers3.schema2
 }
@@ -461,8 +465,6 @@ object implicitFixers8 {
   implicit val schHist2 = fixers8_23.schema2
 }
 
-
-
 object Serializers {
   import derivations._
   import implicitFixers1._
@@ -479,7 +481,8 @@ object Serializers {
 
   import Serializers3._
 
-  class URainbowCommandPersist(implicit eas: ExtendedActorSystem)  extends AvroSerializer[RainbowActorProtocol.URainbowCommand]
+  class URainbowCommandPersist(implicit eas: ExtendedActorSystem)
+      extends AvroSerializer[RainbowActorProtocol.URainbowCommand]
   class URainbowResponsePersist extends AvroSerializer[RainbowActorProtocol.URainbowResponse]
 
   class URainbowErrorPersist extends AvroSerializer[RainbowActorProtocol.URainbowError]
@@ -503,18 +506,25 @@ object Serializers2 {
 
   import Serializers3._
 
-  class URainbowGetCommandPersist(implicit eas: ExtendedActorSystem)  extends AvroSerializer[RainbowActorProtocol.URainbowGetCommand]
-  class URainbowGetIDCommandPersist(implicit eas: ExtendedActorSystem)  extends AvroSerializer[RainbowActorProtocol.URainbowGetIDCommand]
+  class URainbowGetCommandPersist(implicit eas: ExtendedActorSystem)
+      extends AvroSerializer[RainbowActorProtocol.URainbowGetCommand]
+  class URainbowGetIDCommandPersist(implicit eas: ExtendedActorSystem)
+      extends AvroSerializer[RainbowActorProtocol.URainbowGetIDCommand]
 
-  class URainbowOffsetCommandPersist(implicit eas: ExtendedActorSystem)  extends AvroSerializer[RainbowActorProtocol.URainbowGetOffsetCommand]
-  class URainbowMessageCommandPersist(implicit eas: ExtendedActorSystem)  extends AvroSerializer[RainbowActorProtocol.URainbowGetMessageCommand]
-  class URainbowHistoryCommandPersist(implicit eas: ExtendedActorSystem)  extends AvroSerializer[RainbowActorProtocol.URainbowHistoryCommand]
-  class URainbowModifyCommandPersist(implicit eas: ExtendedActorSystem) extends AvroSerializer[RainbowActorProtocol.URainbowModifyCommand]
-  class URainbowCasModifyCommandPersist(implicit eas: ExtendedActorSystem) extends AvroSerializer[RainbowActorProtocol.URainbowCasModifyCommand]
+  class URainbowOffsetCommandPersist(implicit eas: ExtendedActorSystem)
+      extends AvroSerializer[RainbowActorProtocol.URainbowGetOffsetCommand]
+  class URainbowMessageCommandPersist(implicit eas: ExtendedActorSystem)
+      extends AvroSerializer[RainbowActorProtocol.URainbowGetMessageCommand]
+  class URainbowHistoryCommandPersist(implicit eas: ExtendedActorSystem)
+      extends AvroSerializer[RainbowActorProtocol.URainbowHistoryCommand]
+  class URainbowModifyCommandPersist(implicit eas: ExtendedActorSystem)
+      extends AvroSerializer[RainbowActorProtocol.URainbowModifyCommand]
+  class URainbowCasModifyCommandPersist(implicit eas: ExtendedActorSystem)
+      extends AvroSerializer[RainbowActorProtocol.URainbowCasModifyCommand]
   class URainbowEventPersist extends AvroSerializer[URainbowEvent]
   class UpdateRainbowPersist extends AvroSerializer[UpdateRainbow]
-  class URainbowModifyListPersist(implicit eas: ExtendedActorSystem) extends AvroSerializer[RainbowActorProtocol.URainbowModifyList]
-
+  class URainbowModifyListPersist(implicit eas: ExtendedActorSystem)
+      extends AvroSerializer[RainbowActorProtocol.URainbowModifyList]
 
 }
 object Serializers3 {
@@ -532,10 +542,10 @@ object Serializers3 {
   import implicitFixers7._
   import implicitFixers8._
 
-
   class RainbowResponsePersist extends AvroSerializer[RainbowActorProtocol.RainbowResponse]
   class RainbowResponseHistoryPersist extends AvroSerializer[RainbowActorProtocol.RainbowHistoryResponse]
-  class RainbowResponseHistoryParentsPersist extends AvroSerializer[RainbowActorProtocol.RainbowHistoryWithParentResponse]
+  class RainbowResponseHistoryParentsPersist
+      extends AvroSerializer[RainbowActorProtocol.RainbowHistoryWithParentResponse]
 
 }
 

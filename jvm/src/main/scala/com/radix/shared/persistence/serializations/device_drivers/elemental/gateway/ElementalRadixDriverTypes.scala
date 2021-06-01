@@ -16,29 +16,29 @@ object ElementalRadixDriverTypes {
   }
 
   object SendToElemental {
-    def apply(data:ElementalDriverable, replyTo:Option[ActorRef[ElementalResponse]]): SendToElemental = {
+    def apply(data: ElementalDriverable, replyTo: Option[ActorRef[ElementalResponse]]): SendToElemental = {
       new SendToElemental(List(data), replyTo)
     }
 
-    def apply(data:ElementalSendable, replyTo:ActorRef[ElementalResponse]): SendToElemental = {
+    def apply(data: ElementalSendable, replyTo: ActorRef[ElementalResponse]): SendToElemental = {
       new SendToElemental(data.packets, Some(replyTo))
     }
 
-    def apply(data:ElementalDriverable): SendToElemental = {
+    def apply(data: ElementalDriverable): SendToElemental = {
       new SendToElemental(List(data), None)
     }
 
-    def apply(data:ElementalSendable): SendToElemental = {
+    def apply(data: ElementalSendable): SendToElemental = {
       new SendToElemental(data.packets, None)
     }
   }
-  case class SendToElemental(packets: List[ElementalDriverable], replyTo:Option[ActorRef[ElementalResponse]])
-    extends ElementalSendable {
+  case class SendToElemental(packets: List[ElementalDriverable], replyTo: Option[ActorRef[ElementalResponse]])
+      extends ElementalSendable {
 
-    def reply(msg:ElementalResponse): Unit = replyTo match {
-      case None => // Ignore
+    def reply(msg: ElementalResponse): Unit = replyTo match {
+      case None        => // Ignore
       case Some(value) => value ! msg
     }
   }
-  case class ElementalResponse(data:String)
+  case class ElementalResponse(data: String)
 }

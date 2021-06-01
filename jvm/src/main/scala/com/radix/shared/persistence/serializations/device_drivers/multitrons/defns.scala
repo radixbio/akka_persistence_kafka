@@ -42,8 +42,7 @@ object defns {
 
   case class SummaryRequest(replyTo: Option[ReplyToActor]) extends MultitronsRequest
 
-  case class SingleSummaryRequest(replyTo: Some[ReplyToActor], unit: MultitronsUnit)
-    extends MultitronsRequest
+  case class SingleSummaryRequest(replyTo: Some[ReplyToActor], unit: MultitronsUnit) extends MultitronsRequest
 
   case class CheckConnectedRequest(unit: MultitronsUnit, replyTo: Some[ReplyToActor]) extends MultitronsRequest
 
@@ -105,7 +104,8 @@ object defns {
       readCommand(132, unit)
   }
 
-  case class WriteTemperature(setTmp: Int, unit: MultitronsUnit, replyTo: Option[ReplyToActor]) extends MultitronsCommand {
+  case class WriteTemperature(setTmp: Int, unit: MultitronsUnit, replyTo: Option[ReplyToActor])
+      extends MultitronsCommand {
     override val cmd: BitVector =
       writeCommand(128, unit, setTmp)
   }
@@ -115,14 +115,16 @@ object defns {
       writeCommand(129, unit, setSpeed)
   }
 
-  case class WriteLights(setLights: Boolean, unit: MultitronsUnit, replyTo: Option[ReplyToActor]) extends MultitronsCommand {
+  case class WriteLights(setLights: Boolean, unit: MultitronsUnit, replyTo: Option[ReplyToActor])
+      extends MultitronsCommand {
     private[multitrons] implicit def boolToInt(boo: Boolean): Int = if (boo) 1 else 0
 
     override val cmd: BitVector =
       writeCommand(130, unit, setLights)
   }
 
-  case class WriteHumidity(setHumidity: Int, unit: MultitronsUnit, replyTo: Option[ReplyToActor]) extends MultitronsCommand {
+  case class WriteHumidity(setHumidity: Int, unit: MultitronsUnit, replyTo: Option[ReplyToActor])
+      extends MultitronsCommand {
     override val cmd: BitVector =
       writeCommand(131, unit, setHumidity)
   }
@@ -148,13 +150,15 @@ object defns {
     }
   }
 
-  case class SummaryUnit(co2: Option[String],
-                    humidity: Option[String],
-                    temperature: Option[String],
-                    lights: Option[String],
-                    speed: Option[String],
-                    uidadd: String,
-                    time: Long) extends ElementalDriverable {
+  case class SummaryUnit(
+    co2: Option[String],
+    humidity: Option[String],
+    temperature: Option[String],
+    lights: Option[String],
+    speed: Option[String],
+    uidadd: String,
+    time: Long
+  ) extends ElementalDriverable {
 
     override def uidPostfix: String = uidadd
 
@@ -190,18 +194,18 @@ object defns {
 
   object SummaryUnit {
     implicit def smToStr(o: Option[SerialMessage]): Option[String] = o match {
-      case None => None
+      case None        => None
       case Some(value) => Some(value.value)
     }
 
     def apply(
-               co2: Option[SerialMessage],
-               humidity: Option[SerialMessage],
-               temperature: Option[SerialMessage],
-               lights: Option[SerialMessage],
-               speed: Option[SerialMessage],
-               uidadd: String
-             ): SummaryUnit =
+      co2: Option[SerialMessage],
+      humidity: Option[SerialMessage],
+      temperature: Option[SerialMessage],
+      lights: Option[SerialMessage],
+      speed: Option[SerialMessage],
+      uidadd: String
+    ): SummaryUnit =
       new SummaryUnit(co2, humidity, temperature, lights, speed, uidadd, Instant.now().getEpochSecond)
   }
 
@@ -209,11 +213,11 @@ object defns {
 
   case class ValueResponse(value: Option[SerialMessage]) extends MultitronsResponse
   case class SummaryResponse(upper: SummaryUnit, middle: SummaryUnit, lower: SummaryUnit)
-    extends MultitronsResponse with ElementalSendable {
-    override def packets: List[ElementalDriverable] = List(upper,middle,lower)
+      extends MultitronsResponse
+      with ElementalSendable {
+    override def packets: List[ElementalDriverable] = List(upper, middle, lower)
   }
-  case class SingleSummaryResponse(value: SummaryUnit)
-    extends MultitronsResponse with ElementalSendable {
+  case class SingleSummaryResponse(value: SummaryUnit) extends MultitronsResponse with ElementalSendable {
     override def packets: List[ElementalDriverable] = List(value)
   }
 
@@ -225,8 +229,13 @@ object defns {
     def flawless: Boolean = result.isDefined && attempts <= 1
   }
 
-  case class SummaryReadResult(co2: ReadResult, humidity: ReadResult, temperature: ReadResult,
-                               lights: ReadResult, speed: ReadResult) {
+  case class SummaryReadResult(
+    co2: ReadResult,
+    humidity: ReadResult,
+    temperature: ReadResult,
+    lights: ReadResult,
+    speed: ReadResult
+  ) {
     def flawless: Boolean = {
       co2.flawless && humidity.flawless && temperature.flawless && lights.flawless && speed.flawless
     }
@@ -235,7 +244,8 @@ object defns {
   sealed trait MultitronsEvent
 
   case class CommandProcessed(cmd: MultitronsCommand, result: ReadResult) extends MultitronsEvent
-  case class SummaryGenerated(upper: SummaryReadResult, middle: SummaryReadResult, lower: SummaryReadResult) extends MultitronsEvent
+  case class SummaryGenerated(upper: SummaryReadResult, middle: SummaryReadResult, lower: SummaryReadResult)
+      extends MultitronsEvent
   case class SingleSummaryGenerated(result: SummaryReadResult) extends MultitronsEvent
   case class ConnectivityExamined(unit: MultitronsUnit, result: ConnectivityCheckResponse) extends MultitronsEvent
 

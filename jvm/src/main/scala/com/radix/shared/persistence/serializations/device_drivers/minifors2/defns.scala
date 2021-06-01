@@ -24,8 +24,7 @@ object defns {
    */
   case class RequestEvent(request: Minifors2Request, response: Minifors2Response) extends Minifors2Event
 
-  class RequestEventSerializer(implicit eas: ExtendedActorSystem) extends
-    AvroSerializer[RequestEvent]
+  class RequestEventSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[RequestEvent]
 
   /**
    * An event in which a request was sent to the bioreactor but the driver was in a non-connected state.
@@ -38,12 +37,12 @@ object defns {
    * A request sent to the bioreactor.
    */
   sealed trait Minifors2Request {
+
     /**
      * The actor to send the bioreactor's response to.
      */
     val replyTo: Option[ActorRef[Minifors2Response]]
   }
-
 
   /**
    * A response received from the bioreactor.
@@ -113,7 +112,6 @@ object defns {
 
   }
 
-
   /**
    * A field containing information about a certain parameter
    *
@@ -138,7 +136,10 @@ object defns {
 
   object FieldTypes {
 
-    case object CascadeSourceParameter extends FieldType("CascadeSourceParameter") with ReadableFieldType with WriteableFieldType
+    case object CascadeSourceParameter
+        extends FieldType("CascadeSourceParameter")
+        with ReadableFieldType
+        with WriteableFieldType
 
     case object MinValue extends FieldType("MinValue") with ReadableFieldType with WriteableFieldType
 
@@ -154,10 +155,13 @@ object defns {
 
     case object Value extends FieldType("Value") with ReadableFieldType
 
-    case object PumpFactor extends FieldType("PumpFactor") with PumpParameterFieldType with ReadableFieldType with WriteableFieldType
+    case object PumpFactor
+        extends FieldType("PumpFactor")
+        with PumpParameterFieldType
+        with ReadableFieldType
+        with WriteableFieldType
 
   }
-
 
   /**
    * Converts a float to a squants value of type T.
@@ -190,7 +194,6 @@ object defns {
     override def conv(in: Float): Volume = Millilitres(in)
   }
 
-
   /**
    * Contains information read from the bioreactor about a parameter.
    *
@@ -218,135 +221,247 @@ object defns {
    *
    * @tparam U Squants type of setpoint and value of parameter, or Float if they're unitless.
    */
-  sealed abstract class UniformParameterInfo[U](implicit conv: SquantConverter[U]) extends ParameterInfo[U, U]()(conv, conv)
+  sealed abstract class UniformParameterInfo[U](implicit conv: SquantConverter[U])
+      extends ParameterInfo[U, U]()(conv, conv)
 
-
-  case class PumpInfo(pumpName: PumpParameterType, cascadeSourceParameter: String,
-                      rawMinValue: Float, rawMaxValue: Float,
-                      name: String, rawSetPoint: Float, unit: String, rawValue: Float, pumpFactor: Float) extends
-    ParameterInfo[Float, Volume] {
+  case class PumpInfo(
+    pumpName: PumpParameterType,
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float,
+    pumpFactor: Float
+  ) extends ParameterInfo[Float, Volume] {
     override val value: Volume = Millilitres(rawValue * pumpFactor)
   }
 
+  case class FoamInfo(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[Float]
 
-  case class FoamInfo(cascadeSourceParameter: String,
-                      rawMinValue: Float, rawMaxValue: Float,
-                      name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[Float]
+  case class AirFlowInfo(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[VolumeFlow]
 
-  case class AirFlowInfo(cascadeSourceParameter: String,
-                         rawMinValue: Float, rawMaxValue: Float,
-                         name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[VolumeFlow]
+  case class TotalFlowInfo(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[VolumeFlow]
 
-  case class TotalFlowInfo(cascadeSourceParameter: String,
-                           rawMinValue: Float, rawMaxValue: Float,
-                           name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[VolumeFlow]
+  case class Gas2FlowInfo(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[VolumeFlow]
 
-  case class Gas2FlowInfo(cascadeSourceParameter: String,
-                          rawMinValue: Float, rawMaxValue: Float,
-                          name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[VolumeFlow]
+  case class GasMixInfo(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[Float]
 
-  case class GasMixInfo(cascadeSourceParameter: String,
-                        rawMinValue: Float, rawMaxValue: Float,
-                        name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[Float]
+  case class StirrerSpeedInfo(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[Frequency]
 
-  case class StirrerSpeedInfo(cascadeSourceParameter: String,
-                              rawMinValue: Float, rawMaxValue: Float,
-                              name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[Frequency]
+  case class TemperatureInfo(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[Temperature]
 
-  case class TemperatureInfo(cascadeSourceParameter: String,
-                             rawMinValue: Float, rawMaxValue: Float,
-                             name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[Temperature]
+  case class PHInfo(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[Float]
 
-  case class PHInfo(cascadeSourceParameter: String,
-                    rawMinValue: Float, rawMaxValue: Float,
-                    name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[Float]
+  case class PO2Info(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[Float]
 
-  case class PO2Info(cascadeSourceParameter: String,
-                     rawMinValue: Float, rawMaxValue: Float,
-                     name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[Float]
+  case class ExitCO2Info(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[Float]
 
-  case class ExitCO2Info(cascadeSourceParameter: String,
-                         rawMinValue: Float, rawMaxValue: Float,
-                         name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[Float]
+  case class ExitHumidityInfo(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[Float]
 
-  case class ExitHumidityInfo(cascadeSourceParameter: String,
-                              rawMinValue: Float, rawMaxValue: Float,
-                              name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[Float]
+  case class ExitO2Info(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[Float]
 
-  case class ExitO2Info(cascadeSourceParameter: String,
-                        rawMinValue: Float, rawMaxValue: Float,
-                        name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[Float]
+  case class OpticalDensityInfo(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[Float]
 
-  case class OpticalDensityInfo(cascadeSourceParameter: String,
-                                rawMinValue: Float, rawMaxValue: Float,
-                                name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[Float]
+  case class BalanceInfo(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[Mass]
 
-  case class BalanceInfo(cascadeSourceParameter: String,
-                         rawMinValue: Float, rawMaxValue: Float,
-                         name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[Mass]
+  case class AnalogIO1Info(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[Float]
 
-  case class AnalogIO1Info(cascadeSourceParameter: String,
-                           rawMinValue: Float, rawMaxValue: Float,
-                           name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[Float]
-
-  case class AnalogIO2Info(cascadeSourceParameter: String,
-                           rawMinValue: Float, rawMaxValue: Float,
-                           name: String, rawSetPoint: Float, unit: String, rawValue: Float) extends UniformParameterInfo[Float]
-
+  case class AnalogIO2Info(
+    cascadeSourceParameter: String,
+    rawMinValue: Float,
+    rawMaxValue: Float,
+    name: String,
+    rawSetPoint: Float,
+    unit: String,
+    rawValue: Float
+  ) extends UniformParameterInfo[Float]
 
   case class DeviceMetadata(deviceName: String, processState: String)
-
 
   /**
    * Contains all data about the bioreactor's parameters at a certain point in time. The bioreactor may not support
    * all of these parameters based on its configuration; parameters that are not being measured will be set to None.
    */
-  case class Summary(deviceMetadata: DeviceMetadata, foam: Option[FoamInfo], airFlow: Option[AirFlowInfo],
-                     totalFlow: Option[TotalFlowInfo], gas2Flow: Option[Gas2FlowInfo], gasMix: Option[GasMixInfo],
-                     pump1: Option[PumpInfo], pump2: Option[PumpInfo], pump3: Option[PumpInfo],
-                     pump4: Option[PumpInfo], stirrerSpeed: Option[StirrerSpeedInfo], temperature: Option[TemperatureInfo],
-                     pH: Option[PHInfo], pO2: Option[PO2Info],
-                     exitCO2: Option[ExitCO2Info], exitHumidity: Option[ExitHumidityInfo],
-                     exitO2: Option[ExitO2Info], opticalDensity: Option[OpticalDensityInfo],
-                     balance: Option[BalanceInfo], analogIO1: Option[AnalogIO1Info],
-                     analogIO2: Option[AnalogIO2Info]) extends Minifors2Response {
+  case class Summary(
+    deviceMetadata: DeviceMetadata,
+    foam: Option[FoamInfo],
+    airFlow: Option[AirFlowInfo],
+    totalFlow: Option[TotalFlowInfo],
+    gas2Flow: Option[Gas2FlowInfo],
+    gasMix: Option[GasMixInfo],
+    pump1: Option[PumpInfo],
+    pump2: Option[PumpInfo],
+    pump3: Option[PumpInfo],
+    pump4: Option[PumpInfo],
+    stirrerSpeed: Option[StirrerSpeedInfo],
+    temperature: Option[TemperatureInfo],
+    pH: Option[PHInfo],
+    pO2: Option[PO2Info],
+    exitCO2: Option[ExitCO2Info],
+    exitHumidity: Option[ExitHumidityInfo],
+    exitO2: Option[ExitO2Info],
+    opticalDensity: Option[OpticalDensityInfo],
+    balance: Option[BalanceInfo],
+    analogIO1: Option[AnalogIO1Info],
+    analogIO2: Option[AnalogIO2Info]
+  ) extends Minifors2Response {
 
     /**
      * Gets the ParameterInfo of the given ParameterType.
      */
     def getParameterByType(parameter: ParameterType): Option[ParameterInfo[_, _]] =
       parameter match {
-        case ParameterTypes.Pump1 => pump1
-        case ParameterTypes.Pump2 => pump2
-        case ParameterTypes.Pump3 => pump3
-        case ParameterTypes.Pump4 => pump4
-        case ParameterTypes.Foam => foam
-        case ParameterTypes.AirFlow => airFlow
-        case ParameterTypes.TotalFlow => totalFlow
-        case ParameterTypes.Gas2Flow => gas2Flow
-        case ParameterTypes.GasMix => gasMix
-        case ParameterTypes.StirrerSpeed => stirrerSpeed
-        case ParameterTypes.Temperature => temperature
-        case ParameterTypes.PH => pH
-        case ParameterTypes.PO2 => pO2
-        case ParameterTypes.ExitCO2 => exitCO2
-        case ParameterTypes.ExitHumidity => exitHumidity
-        case ParameterTypes.ExitO2 => exitO2
+        case ParameterTypes.Pump1          => pump1
+        case ParameterTypes.Pump2          => pump2
+        case ParameterTypes.Pump3          => pump3
+        case ParameterTypes.Pump4          => pump4
+        case ParameterTypes.Foam           => foam
+        case ParameterTypes.AirFlow        => airFlow
+        case ParameterTypes.TotalFlow      => totalFlow
+        case ParameterTypes.Gas2Flow       => gas2Flow
+        case ParameterTypes.GasMix         => gasMix
+        case ParameterTypes.StirrerSpeed   => stirrerSpeed
+        case ParameterTypes.Temperature    => temperature
+        case ParameterTypes.PH             => pH
+        case ParameterTypes.PO2            => pO2
+        case ParameterTypes.ExitCO2        => exitCO2
+        case ParameterTypes.ExitHumidity   => exitHumidity
+        case ParameterTypes.ExitO2         => exitO2
         case ParameterTypes.OpticalDensity => opticalDensity
-        case ParameterTypes.Balance => balance
-        case ParameterTypes.AnalogIO1 => analogIO1
-        case ParameterTypes.AnalogIO2 => analogIO2
+        case ParameterTypes.Balance        => balance
+        case ParameterTypes.AnalogIO1      => analogIO1
+        case ParameterTypes.AnalogIO2      => analogIO2
       }
   }
 
   class SummarySerializer extends AvroSerializer[Summary]
 
-
   /**
    * Requests to get all data on the bioreactor's parameters.
    */
-  case class SummaryRequest(replyTo: Option[ActorRef[Minifors2Response]])
-    extends Minifors2Request
+  case class SummaryRequest(replyTo: Option[ActorRef[Minifors2Response]]) extends Minifors2Request
 
   class SummaryRequestSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[SummaryRequest]
 
@@ -383,15 +498,17 @@ object defns {
   /**
    * A value has successfully been written to the given field of the given parameter
    */
-  case class SuccessfulWrite(parameterType: ParameterType, fieldType: FieldType) extends GeneralParameterWriteResult with
-    SetpointWriteResult
+  case class SuccessfulWrite(parameterType: ParameterType, fieldType: FieldType)
+      extends GeneralParameterWriteResult
+      with SetpointWriteResult
 
   /**
    * A value could not be written to the given field of the given parameter for reasons relating to the OPC server.
    * The error code provided is an OPC Status Code
    */
-  case class WriteRejected(parameterType: ParameterType, fieldType: FieldType, code: Long, message: String) extends GeneralParameterWriteResult with
-    SetpointWriteResult
+  case class WriteRejected(parameterType: ParameterType, fieldType: FieldType, code: Long, message: String)
+      extends GeneralParameterWriteResult
+      with SetpointWriteResult
 
   /** A setpoint cannot be written to a parameter that is controlled by cascade. */
   case class CannotWriteToCascade(parameterType: ParameterType) extends SetpointWriteResult {
@@ -399,13 +516,15 @@ object defns {
   }
 
   /** The attempted setpoint write is outside the min/max values set by the bioreactor. */
-  case class SetpointOutOfBounds(parameterType: ParameterType, minValue: Float, maxValue: Float) extends SetpointWriteResult {
+  case class SetpointOutOfBounds(parameterType: ParameterType, minValue: Float, maxValue: Float)
+      extends SetpointWriteResult {
     val fieldType: FieldType = FieldTypes.SetPoint
   }
 
   /** The write cannot be completed because the parameter currently does not exist on the machine. */
-  case class ParameterDisabled(parameterType: ParameterType, fieldType: FieldType) extends GeneralParameterWriteResult with
-    SetpointWriteResult
+  case class ParameterDisabled(parameterType: ParameterType, fieldType: FieldType)
+      extends GeneralParameterWriteResult
+      with SetpointWriteResult
 
   /**
    * Request to write data to a node on the bioreactor.
@@ -421,31 +540,35 @@ object defns {
   }
 
   case class WriteTemperature(replyTo: Option[ActorRef[Minifors2Response]], temperatureSetPoint: Temperature)
-    extends SetPointWriteRequest {
+      extends SetPointWriteRequest {
     val parameterType: ParameterType = ParameterTypes.Temperature
     val setPoint: Float = temperatureSetPoint.to(Celsius).toFloat
   }
 
-  class WriteTemperatureSerializer(implicit extendedActorSystem: ExtendedActorSystem) extends AvroSerializer[WriteTemperature]
+  class WriteTemperatureSerializer(implicit extendedActorSystem: ExtendedActorSystem)
+      extends AvroSerializer[WriteTemperature]
 
   case class WriteTotalFlow(replyTo: Option[ActorRef[Minifors2Response]], flowSetPoint: VolumeFlow)
-    extends SetPointWriteRequest {
+      extends SetPointWriteRequest {
     val parameterType: ParameterType = ParameterTypes.TotalFlow
     val setPoint: Float = flowSetPoint.to(LitresPerMinute).toFloat
   }
 
-  class WriteTotalFlowSerializer(implicit extendedActorSystem: ExtendedActorSystem) extends AvroSerializer[WriteTotalFlow]
+  class WriteTotalFlowSerializer(implicit extendedActorSystem: ExtendedActorSystem)
+      extends AvroSerializer[WriteTotalFlow]
 
-  case class WriteGasMix(replyTo: Option[ActorRef[Minifors2Response]], percentO2: Float) extends
-    SetPointWriteRequest {
+  case class WriteGasMix(replyTo: Option[ActorRef[Minifors2Response]], percentO2: Float) extends SetPointWriteRequest {
     val parameterType: ParameterType = ParameterTypes.GasMix
     val setPoint: Float = percentO2
   }
 
   class WriteGasMixSerializer(implicit extendedActorSystem: ExtendedActorSystem) extends AvroSerializer[WriteGasMix]
 
-  case class WritePump(replyTo: Option[ActorRef[Minifors2Response]], pump: PumpParameterType, percentDeliveryRate: Float)
-    extends SetPointWriteRequest {
+  case class WritePump(
+    replyTo: Option[ActorRef[Minifors2Response]],
+    pump: PumpParameterType,
+    percentDeliveryRate: Float
+  ) extends SetPointWriteRequest {
     val parameterType: ParameterType = pump
     val setPoint: Float = percentDeliveryRate
   }
@@ -453,12 +576,13 @@ object defns {
   class WritePumpSerializer(implicit extendedActorSystem: ExtendedActorSystem) extends AvroSerializer[WritePump]
 
   case class WriteStirrerSpeed(replyTo: Option[ActorRef[Minifors2Response]], frequency: Frequency)
-    extends SetPointWriteRequest {
+      extends SetPointWriteRequest {
     val parameterType: ParameterType = ParameterTypes.StirrerSpeed
     val setPoint: Float = frequency.toRevolutionsPerMinute.toFloat
   }
 
-  class WriteStirrerSpeedSerializer(implicit extendedActorSystem: ExtendedActorSystem) extends AvroSerializer[WriteStirrerSpeed]
+  class WriteStirrerSpeedSerializer(implicit extendedActorSystem: ExtendedActorSystem)
+      extends AvroSerializer[WriteStirrerSpeed]
 
   case class WritePH(replyTo: Option[ActorRef[Minifors2Response]], pH: Float) extends SetPointWriteRequest {
     val parameterType: ParameterType = ParameterTypes.PH

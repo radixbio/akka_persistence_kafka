@@ -14,7 +14,7 @@ import org.apache.avro.{Schema, SchemaBuilder}
 import org.apache.avro.generic.{GenericData, GenericRecord}
 import org.apache.avro.util.Utf8
 import scalaz.{Cofree, Functor}
-import ujson.{Js, read}
+import ujson.{read, Js}
 
 import scala.collection.JavaConverters._
 import com.radix.shared.persistence.serializations.squants.schemas._
@@ -43,7 +43,10 @@ object derivations {
     }
 
   }
-  implicit def mapDecoderWellID[T](implicit valueDecoder: Decoder[T], schemaForImp: SchemaFor[T]): Decoder[Map[WellID, T]] =
+  implicit def mapDecoderWellID[T](
+    implicit valueDecoder: Decoder[T],
+    schemaForImp: SchemaFor[T]
+  ): Decoder[Map[WellID, T]] =
     new Decoder[Map[WellID, T]] {
 
       override def decode(value: Any): Map[WellID, T] =
@@ -65,7 +68,7 @@ object derivations {
     new Encoder[Map[WellID, V]] {
 
       override def encode(
-        map: Map[WellID, V],
+        map: Map[WellID, V]
       ): java.util.Map[String, AnyRef] = {
         require(schema != null)
         val java = new util.HashMap[String, AnyRef]
@@ -92,7 +95,10 @@ object derivations {
   it is possible to generalize this, but it was easier to reorder the AST itself in the case that wrote this.
   TODO add support for field reordering to respect rolled-up field reference ordering
    */
-  implicit def SchemaForFix[F[_]: Functor, Fx[_[_]]](implicit ev: SchemaFor[F[REPLACE.type]], lol: BirecursiveT[Fx]): SchemaFor[Fx[F]] = {
+  implicit def SchemaForFix[F[_]: Functor, Fx[_[_]]](
+    implicit ev: SchemaFor[F[REPLACE.type]],
+    lol: BirecursiveT[Fx]
+  ): SchemaFor[Fx[F]] = {
     val replaceNamespace = REPLACE.getClass.getName.split('$').head
     val replaceName =
       REPLACE.getClass.getSimpleName.replaceAllLiterally("$", "")
@@ -302,11 +308,10 @@ object derivations {
         R.cata[GenericData.Record](t)(alg)
       }
     }
-  implicit def DecoderForCofree(
-    implicit ev: SchemaFor[PrismWithMetadata]): Decoder[PrismWithMetadata] =
-        new Decoder[PrismWithMetadata] {
-        override def schemaFor: SchemaFor[PrismWithMetadata] = ev
-        //TODO implement head and tails
+  implicit def DecoderForCofree(implicit ev: SchemaFor[PrismWithMetadata]): Decoder[PrismWithMetadata] =
+    new Decoder[PrismWithMetadata] {
+      override def schemaFor: SchemaFor[PrismWithMetadata] = ev
+      //TODO implement head and tails
       override def decode(value: Any): PrismWithMetadata = {
         val genRecord = value.asInstanceOf[GenericRecord]
 
@@ -396,9 +401,7 @@ object derivations {
 
       private[this] val arraySchema = Schema.createArray(ev.schema)
       private[this] val encoderAlg: Algebra[Container, AnyRef] = cont => {
-        val recordSchema = ev
-          .schema
-          .getTypes
+        val recordSchema = ev.schema.getTypes
           .get(ev.schema.getIndexNamed(cont.getClass.getName))
         val record = new GenericData.Record(recordSchema)
         val containsr =
@@ -467,7 +470,7 @@ object derivations {
 
   implicit def DecoderForContainer(
     implicit ev: SchemaFor[Fix[Container]]
-   ): Decoder[Fix[Container]] =
+  ): Decoder[Fix[Container]] =
     new Decoder[Fix[Container]] {
       override def schemaFor: SchemaFor[Fix[Container]] = ev
       private[this] val decoderCoalgebra: Coalgebra[Container, GenericRecord] =
@@ -527,15 +530,13 @@ object derivations {
       }
     }
 
-  implicit def AvroPathEncoder(implicit ev: SchemaFor[Fix[Path]]): Encoder[Fix[Path]]  = {
+  implicit def AvroPathEncoder(implicit ev: SchemaFor[Fix[Path]]): Encoder[Fix[Path]] = {
     new Encoder[Fix[Path]] {
       override def schemaFor: SchemaFor[Fix[Path]] = ev
 
       private[this] val arraySchema = Schema.createArray(ev.schema)
       private[this] val encoderAlg: Algebra[Path, AnyRef] = path => {
-        val recordSchema = ev
-          .schema
-          .getTypes
+        val recordSchema = ev.schema.getTypes
           .get(ev.schema.getIndexNamed(path.getClass.getName))
         val record = new GenericData.Record(recordSchema)
         path match {
@@ -558,11 +559,11 @@ object derivations {
       override def encode(t: Fix[Path]): AnyRef = t.cata(encoderAlg)
     }
   }
-  implicit def AvroPathDecoder(implicit ev: SchemaFor[Fix[Path]]): Decoder[Fix[Path]]  = {
-      new Decoder[Fix[Path]] {
-        override def schemaFor: SchemaFor[Fix[Path]] = ev
+  implicit def AvroPathDecoder(implicit ev: SchemaFor[Fix[Path]]): Decoder[Fix[Path]] = {
+    new Decoder[Fix[Path]] {
+      override def schemaFor: SchemaFor[Fix[Path]] = ev
 
-        private[this] val decoderCoalgebra: Coalgebra[Path, GenericRecord] =
+      private[this] val decoderCoalgebra: Coalgebra[Path, GenericRecord] =
         record => {
 
           record.getSchema.getName match {

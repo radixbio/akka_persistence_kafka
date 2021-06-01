@@ -15,7 +15,7 @@ object DriverSerializer {
 
   class Local(system: ExtendedActorSystem) extends SerializerWithStringManifest {
     private lazy val akkaSzr = SerializationExtension(system)
-    
+
     private val Manifest = classOf[requests.Local[_]].getName
 
     override def identifier: Int = Manifest.hashCode
@@ -26,9 +26,10 @@ object DriverSerializer {
       o match {
         case req: requests.Local[_] =>
           akkaSzr.serialize(req.request.asInstanceOf[AnyRef]) match {
-            case Failure(exception) =>  throw new NotSerializableException(
-              s"Serialization failed as message type could not be serialized: ${exception.getMessage}"
-            )
+            case Failure(exception) =>
+              throw new NotSerializableException(
+                s"Serialization failed as message type could not be serialized: ${exception.getMessage}"
+              )
             case Success(value) =>
               encodeString(req.ct.toString()) ++ value
           }
@@ -44,9 +45,10 @@ object DriverSerializer {
         val (className, consumed) = decodeString(bytes)
         val clazz = Class.forName(className)
         akkaSzr.deserialize(bytes.drop(consumed), clazz) match {
-          case Failure(exception) => throw new NotSerializableException(
-            s"Serialization failed as message type could not be deserialized: ${exception.getMessage}"
-          )
+          case Failure(exception) =>
+            throw new NotSerializableException(
+              s"Serialization failed as message type could not be deserialized: ${exception.getMessage}"
+            )
           case Success(msg) =>
             val ct = ClassTag(Class.forName(className)).asInstanceOf[ClassTag[Any]]
             val r = clazz.cast(msg)
@@ -69,7 +71,7 @@ object DriverSerializer {
       val (len, consumed) = decodeInt(src)
 
       val str = src.slice(consumed, consumed + len).map(_.toChar).mkString
-      (str, len+consumed)
+      (str, len + consumed)
     }
 
     private final val eiMask = Int.MaxValue - 127
@@ -97,15 +99,15 @@ object DriverSerializer {
         (((unVared._1 / 2) + 1) * -1, unVared._2)
       }
     }
-    private def decodeUInt(src: Array[Byte], shift:Int = 0): (Int, Int) = {
+    private def decodeUInt(src: Array[Byte], shift: Int = 0): (Int, Int) = {
       src.headOption match {
         case None => (0, 0)
         case Some(b) =>
           if ((b & 0x80) == 0) {
-            ((b & 0x7F) << (shift * 7), shift+1)
+            ((b & 0x7F) << (shift * 7), shift + 1)
           } else {
-            val rem = decodeUInt(src.tail, shift+1)
-            val x = ((b & 0x7F) << (shift*7)) | rem._1
+            val rem = decodeUInt(src.tail, shift + 1)
+            val x = ((b & 0x7F) << (shift * 7)) | rem._1
             (x, rem._2)
           }
       }

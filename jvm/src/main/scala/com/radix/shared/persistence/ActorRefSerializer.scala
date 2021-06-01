@@ -77,7 +77,6 @@ object ActorRefSerializer {
         StreamRefResolver.get(eas).resolveSourceRef(value.toString)
       override def schemaFor: SchemaFor[SourceRef[T]] = SchemaForSourceRef
 
-
     }
 
 }

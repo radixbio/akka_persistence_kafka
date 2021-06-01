@@ -5,7 +5,6 @@ import squants.space.{Length, Volume}
 import squants.thermal.Temperature
 import squants.{Temperature, Volume} //this is necessary
 
-
 object Serializers {
   implicit val tempEncoder: Encoder[Temperature] = Encoder.encodeString.contramap { _.toString }
   implicit val tempDecoder: Decoder[Temperature] = Decoder.decodeString.emap { str =>
@@ -21,6 +20,5 @@ object Serializers {
   implicit val lenDecoder: Decoder[Length] = Decoder.decodeString.emap { str =>
     Length(str).toOption.toRight("length")
   }
-
 
 }

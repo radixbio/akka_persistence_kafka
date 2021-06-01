@@ -70,7 +70,6 @@ object defns {
 
   sealed trait OpentronsRequest
 
-
   final case class OpentronsOrder(
     world: SourceRef[PrismNoMeta],
     opentronsUUID: UUID,

@@ -81,8 +81,7 @@ object defns {
   /**
    * Get all of the datapoints associated with a batch.
    */
-  case class GetBatchDatapoints(replyTo: Option[ActorRef[EveResponse]], batchID: String)
-      extends EveGetRequest
+  case class GetBatchDatapoints(replyTo: Option[ActorRef[EveResponse]], batchID: String) extends EveGetRequest
 
   class GetBatchDatapointsSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[GetBatchDatapoints]
 
