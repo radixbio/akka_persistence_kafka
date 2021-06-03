@@ -60,7 +60,7 @@ object ActorRefSerializer {
 
   implicit def SchemaForSourceRef[T]: SchemaFor[SourceRef[T]] = new SchemaFor[SourceRef[T]] {
     override def schema: Schema = SchemaBuilder.builder.stringType()
-    override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
+    override def fieldMapper: FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
 
   }
 
@@ -76,7 +76,5 @@ object ActorRefSerializer {
       override def decode(value: Any): SourceRef[T] =
         StreamRefResolver.get(eas).resolveSourceRef(value.toString)
       override def schemaFor: SchemaFor[SourceRef[T]] = SchemaForSourceRef
-
     }
-
 }

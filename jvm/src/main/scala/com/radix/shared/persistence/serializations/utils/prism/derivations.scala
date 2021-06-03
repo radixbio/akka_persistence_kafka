@@ -589,8 +589,9 @@ object derivations {
 
   implicit val schemaForPrismNoMeta: SchemaFor[PrismNoMeta] = new SchemaFor[PrismNoMeta] {
 //    override def schema: Schema = the[SchemaFor[(Fix[Container], UUID)]].schema(fieldMapper)
-    override def schema: Schema = Schema.create(Schema.Type.RECORD)
+    override def schema: Schema = the[SchemaFor[(Fix[Container], UUID)]].schema
     override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
+
   }
 
   implicit val decoderForPrismNoMeta: Decoder[PrismNoMeta] = new Decoder[PrismNoMeta] {
