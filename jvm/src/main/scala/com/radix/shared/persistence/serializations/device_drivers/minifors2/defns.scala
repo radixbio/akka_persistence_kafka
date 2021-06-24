@@ -454,6 +454,15 @@ object defns {
         case ParameterTypes.AnalogIO1      => analogIO1
         case ParameterTypes.AnalogIO2      => analogIO2
       }
+
+    def getPumpParameterByType(parameter: PumpParameterType): Option[PumpInfo] = {
+      parameter match {
+        case ParameterTypes.Pump1 => pump1
+        case ParameterTypes.Pump2 => pump2
+        case ParameterTypes.Pump3 => pump3
+        case ParameterTypes.Pump4 => pump4
+      }
+    }
   }
 
   class SummarySerializer extends AvroSerializer[Summary]
@@ -473,9 +482,9 @@ object defns {
   /**
    * Collection of write results, one for each edited field of a parameter.
    */
-  case class ParameterWriteResponses(responses: List[ParameterWriteResult]) extends WriteResponse
+  case class ParameterWriteResponse(response: ParameterWriteResult) extends WriteResponse
 
-  class ParameterWriteResponseSerializer extends AvroSerializer[ParameterWriteResponses]
+  class ParameterWriteResponseSerializer extends AvroSerializer[ParameterWriteResponse]
 
   /**
    * Contains information about the result of trying to write to the field of a parameter.
