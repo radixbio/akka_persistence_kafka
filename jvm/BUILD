@@ -23,6 +23,7 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/mock_bioreactor:mock_bioreactor-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/multitrons:multitrons-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/olditrons:olditrons-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/omnidriver:omnidriver-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/opentrons:opentrons-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/quantstudio:quantstudio-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/tfexactive:tfexactive-serializations",
@@ -61,7 +62,7 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/bunny:bunny-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/healthcheck:healthcheck-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/prism:prism-serialization",
-        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/rainbow:rainbow-serialization",
+        #        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/rainbow:rainbow-serialization",
     ],
 )
 
