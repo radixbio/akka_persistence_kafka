@@ -7,9 +7,21 @@ import org.apache.avro.{Schema, SchemaBuilder}
 import squants.motion.VolumeFlow
 import squants.space.{Length, Volume}
 import squants.thermal.Temperature
-import squants.time.Frequency
+import squants.time.{Frequency, Time}
 
 object schemas {
+
+  implicit object SchemaForTime extends SchemaFor[Time] {
+    override def schema: Schema =
+      SchemaBuilder
+        .builder("org.typelevel.squants")
+        .record("time")
+        .fields()
+        .requiredDouble("time")
+        .requiredString("unit")
+        .endRecord()
+    override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
+  }
 
   implicit object SchemaForTemp extends SchemaFor[Temperature] {
     override def schema: Schema =
@@ -71,6 +83,30 @@ object schemas {
         .requiredString("unit")
         .endRecord()
     override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
+  }
+
+  implicit object TimeEncoder extends Encoder[Time] {
+    override def encode(t: Time): AnyRef = {
+      val record = new GenericData.Record(schema)
+      record.put("time", t.value)
+      record.put("unit", t.unit.symbol)
+      record
+    }
+    override def schemaFor: SchemaFor[Time] = SchemaForTime
+
+  }
+
+  implicit object TimeDecoder extends Decoder[Time] {
+    override def decode(value: Any): Time = {
+      val record = value.asInstanceOf[GenericRecord]
+      val parsed = record.get("time").toString + " " + record.get("unit").toString
+      Time(parsed).getOrElse(
+        throw new IllegalStateException(
+          s"AVRO failed to deserialize in radix code. $parsed is not a valid squants.Time"
+        )
+      )
+    }
+    override def schemaFor: SchemaFor[Time] = SchemaForTime
   }
 
   implicit object TemperatureEncoder extends Encoder[Temperature] {
