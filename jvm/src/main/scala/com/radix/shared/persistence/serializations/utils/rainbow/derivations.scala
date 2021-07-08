@@ -13,7 +13,7 @@ import scala.collection.JavaConverters._
 import java.util
 
 import akka.persistence.SnapshotMetadata
-import com.radix.rainbow.LabMeta
+import com.radix.rainbow.{LabMeta, SerialRainbow}
 import com.radix.rainbow.URainbow.{CommandMetadata, RainbowCommandAndReverse, RainbowHistoricalResponse, RainbowHistoricalResponseWithParents, RainbowModifyCommand, URainbowEvent, UpdateRainbow, ValidReverse}
 import com.radix.rainbow.URainbow.UTypes.{ID, Metadata, RainbowMetaSerialized}
 import com.radix.shared.persistence.AvroSerializer
@@ -547,6 +547,15 @@ object Serializers3 {
   class RainbowResponseHistoryParentsPersist
       extends AvroSerializer[RainbowActorProtocol.RainbowHistoryWithParentResponse]
 
+}
+
+object Serializers4 {
+  import derivations._
+
+  import implicitFixers1._
+  import implicitFixers2._
+
+  class SerialRainbowSerializer extends AvroSerializer[SerialRainbow[String, LabMeta[Metadata]]]
 }
 
 object EncodersDecoders
