@@ -14,6 +14,9 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/common:driver-commons-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/squants:squants-serializations",
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
+        "@third_party//3rdparty/jvm/io/circe:circe_core",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/elemental/gateway:elemental-gateway-serializations",
+        "@third_party//3rdparty/jvm/io/circe:circe_generic",
         "@third_party//3rdparty/jvm/org/typelevel:squants",
     ],
     deps = [
@@ -21,6 +24,9 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/common:driver-commons-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/squants:squants-serializations",
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
+        "@third_party//3rdparty/jvm/io/circe:circe_core",
+        "@third_party//3rdparty/jvm/io/circe:circe_generic",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/elemental/gateway:elemental-gateway-serializations",
         "@third_party//3rdparty/jvm/org/typelevel:squants",
     ],
 )

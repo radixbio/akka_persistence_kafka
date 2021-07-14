@@ -6,7 +6,7 @@ import io.circe.Json
 
 object ElementalRadixDriverTypes {
   trait ElementalDriverable {
-    val uuid: String = ConfigFactory.load().getString("elemental.uuid")
+    def uuid: String = ConfigFactory.load().getString("elemental.uuid")
     def toElementalJSON: Json
     def uidPostfix: String
     def messageType: String = "sensor"
