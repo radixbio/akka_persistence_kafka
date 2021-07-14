@@ -1,10 +1,12 @@
 package com.radix.shared.persistence.serializations.device_drivers.ln2
 
 import akka.actor.typed.receptionist.ServiceKey
-import com.radix.shared.persistence.serializations.device_drivers.ln2.defns.LNLevelRequest
 
+import com.radix.shared.persistence.serializations.device_drivers.ln2.defns.LNLevelRequest
 import scala.reflect.ClassTag
 
+import com.radix.shared.persistence.serializations.device_drivers.common.requests.DriverRequest
+
 object actorInfo {
-  val skey = ServiceKey[LNLevelRequest]("ln2-actor")
+  val skey = ServiceKey[DriverRequest[LNLevelRequest]]("ln2-actor")
 }
