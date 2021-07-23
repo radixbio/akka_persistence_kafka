@@ -410,21 +410,36 @@ object defns {
    * Contains all data about the bioreactor's parameters at a certain point in time. The bioreactor may not support
    * all of these parameters based on its configuration; parameters that are not being measured will be set to None.
    */
-  case class Summary(deviceMetadata: DeviceMetadata, foam: Option[FoamInfo], airFlow: Option[AirFlowInfo],
-                     totalFlow: Option[TotalFlowInfo], gas2Flow: Option[Gas2FlowInfo], gasMix: Option[GasMixInfo],
-                     pump1: Option[PumpInfo], pump2: Option[PumpInfo], pump3: Option[PumpInfo],
-                     pump4: Option[PumpInfo], stirrerSpeed: Option[StirrerSpeedInfo], temperature: Option[TemperatureInfo],
-                     pH: Option[PHInfo], pO2: Option[PO2Info],
-                     exitCO2: Option[ExitCO2Info], exitHumidity: Option[ExitHumidityInfo],
-                     exitO2: Option[ExitO2Info], opticalDensity: Option[OpticalDensityInfo],
-                     balance: Option[BalanceInfo], analogIO1: Option[AnalogIO1Info],
-                     analogIO2: Option[AnalogIO2Info]) extends Minifors2Response with ElementalSendable with ElementalDriverable {
-
+  case class Summary(
+    deviceMetadata: DeviceMetadata,
+    foam: Option[FoamInfo],
+    airFlow: Option[AirFlowInfo],
+    totalFlow: Option[TotalFlowInfo],
+    gas2Flow: Option[Gas2FlowInfo],
+    gasMix: Option[GasMixInfo],
+    pump1: Option[PumpInfo],
+    pump2: Option[PumpInfo],
+    pump3: Option[PumpInfo],
+    pump4: Option[PumpInfo],
+    stirrerSpeed: Option[StirrerSpeedInfo],
+    temperature: Option[TemperatureInfo],
+    pH: Option[PHInfo],
+    pO2: Option[PO2Info],
+    exitCO2: Option[ExitCO2Info],
+    exitHumidity: Option[ExitHumidityInfo],
+    exitO2: Option[ExitO2Info],
+    opticalDensity: Option[OpticalDensityInfo],
+    balance: Option[BalanceInfo],
+    analogIO1: Option[AnalogIO1Info],
+    analogIO2: Option[AnalogIO2Info]
+  ) extends Minifors2Response
+      with ElementalSendable
+      with ElementalDriverable {
 
     override def packets: List[ElementalDriverable] = List(this)
 
     // Apparently Circe's semi-auto derivation can't handle the options, but auto can??
-    override def toElementalJSON: Json = /*summaryEncoder(this)*/this.asJson
+    override def toElementalJSON: Json = /*summaryEncoder(this)*/ this.asJson
 
     override def uidPostfix: String = deviceMetadata.deviceName
 

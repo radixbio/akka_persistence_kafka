@@ -26,7 +26,6 @@ object defns {
   type Ptr = List[VMId]
   type PtrMeta = Map[String, String]
 
-
   // VM bytecode definitions used to construct messages for the VM
   sealed trait Bytecode
   //basics
@@ -61,12 +60,10 @@ object defns {
   implicit def encoderForBytecode = the[Encoder[Bytecode]]
   implicit def decodedForBytecode = the[Decoder[Bytecode]]
 
-
-
   trait VMRequest
 
   case class SendProgram(program: Bytecode, returnPID: Option[ActorRef[Int]], signalDone: Option[ActorRef[Int]])
-    extends VMRequest
+      extends VMRequest
 
   case class KillProcess(PID: Int) extends VMRequest
 

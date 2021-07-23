@@ -42,8 +42,13 @@ object defns {
 
   final case class DelayCommand(time: Float, message: Option[String]) extends PipetteCommand
 
-  final case class BlowoutCommand(world: RainbowMetaSerialized, labwareUID: String, wellUID: String, volume: Volume, position: Offset)
-      extends PipetteCommand
+  final case class BlowoutCommand(
+    world: RainbowMetaSerialized,
+    labwareUID: String,
+    wellUID: String,
+    volume: Volume,
+    position: Offset
+  ) extends PipetteCommand
 
   final case class TouchTipCommand(
     world: RainbowMetaSerialized,
@@ -74,7 +79,7 @@ object defns {
 
   sealed trait OpentronsEvent
   sealed trait OpentronsHWEvent
-  case class OTErrorOccurred(message:String) extends OpentronsEvent with OpentronsHWEvent
+  case class OTErrorOccurred(message: String) extends OpentronsEvent with OpentronsHWEvent
   case class OTExecutedProtocol() extends OpentronsEvent with OpentronsHWEvent
   case class OTForwardedRequest() extends OpentronsEvent
 
@@ -92,12 +97,11 @@ object defns {
   case class OpentronsCommandDone() extends OpentronsReply
   case class OpentronsCommandFailed() extends OpentronsReply
 
-
   class OpentronsInformationResponseSerializer extends AvroSerializer[OpentronsInformationResponse]
   class OpentronsCommandDoneSerializer extends AvroSerializer[OpentronsCommandDone]
   class OpentronsCommandFailedSerializer extends AvroSerializer[OpentronsCommandFailed]
 
   class OpentronsOrderSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[OpentronsOrder]
   class OpentronsInformationRequestSerializer(implicit eas: ExtendedActorSystem)
-    extends AvroSerializer[OpentronsInformationRequest]
+      extends AvroSerializer[OpentronsInformationRequest]
 }

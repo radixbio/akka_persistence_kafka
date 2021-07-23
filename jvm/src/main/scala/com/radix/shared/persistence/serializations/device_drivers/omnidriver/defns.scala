@@ -13,9 +13,11 @@ object defns {
 
   class OmnidriverEventSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[OmnidriverEvent]
 
-  case class OmnidriverRequestResponseEvent(request: OmnidriverRequest, response: OmnidriverResponse) extends OmnidriverEvent
+  case class OmnidriverRequestResponseEvent(request: OmnidriverRequest, response: OmnidriverResponse)
+      extends OmnidriverEvent
 
-  class OmnidriverRequestResponseEventSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[OmnidriverRequestResponseEvent]
+  class OmnidriverRequestResponseEventSerializer(implicit eas: ExtendedActorSystem)
+      extends AvroSerializer[OmnidriverRequestResponseEvent]
 
   sealed trait OmnidriverRequest {
     val replyTo: Option[ActorRef[CommonResponse]]
@@ -46,7 +48,7 @@ object defns {
 
   case class SetAcquisitionParameters(
     replyTo: Option[ActorRef[AcquisitionParameterResponse]],
-    lampOn: Option[Boolean],
+    lampOn: Option[Boolean]
   ) extends OmnidriverRequest
 
   class SetAcquisitionParametersSerializer(implicit extendedActorSystem: ExtendedActorSystem)
@@ -58,15 +60,13 @@ object defns {
 
   case class AcquisitionParameters(
     lampOn: Boolean,
-    integrationTime: Time,
-  ) extends AcquisitionParameterResponse {
-
-  }
+    integrationTime: Time
+  ) extends AcquisitionParameterResponse {}
 
   class AcquisitionParametersSerializer extends AvroSerializer[AcquisitionParameters]
 
-  case class SetIntegrationTime(replyTo: Option[ActorRef[SetIntegrationTimeResponse]],
-                                time: Time) extends OmnidriverRequest
+  case class SetIntegrationTime(replyTo: Option[ActorRef[SetIntegrationTimeResponse]], time: Time)
+      extends OmnidriverRequest
 
   class SetIntegrationTimeSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[SetIntegrationTime]
 

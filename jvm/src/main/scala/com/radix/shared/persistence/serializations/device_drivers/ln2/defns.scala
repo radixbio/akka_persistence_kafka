@@ -13,7 +13,7 @@ object defns {
 
   final case class LNLevelRequest(replyTo: Option[ActorRef[LNLevel]]) {
     def reply(msg: LNLevel): Unit = replyTo match {
-      case None => // Ignore
+      case None        => // Ignore
       case Some(value) => value ! msg
     }
   }

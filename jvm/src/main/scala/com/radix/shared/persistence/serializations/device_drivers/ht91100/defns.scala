@@ -26,15 +26,18 @@ object defns {
 
   class RequestResponseEventSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[RequestResponseEvent]
 
-
   /**
    * Starts the shaker using the given amount of time to ramp up to the given velocity.
    * @param acceleration Amount of time it takes shaker to ramp up to target velocity. Must be from 0-10 seconds.
    * @param velocity Velocity at which shaker shakes. Must be from 60-3570 RPM.
    * @param clockwise: Whether shaker should spin clockwise
    */
-  case class StartShaker(replyTo: Option[ActorRef[CommandResponse]], acceleration: Time,
-                    velocity: Frequency, clockwise: Boolean) extends Ht91100Request {
+  case class StartShaker(
+    replyTo: Option[ActorRef[CommandResponse]],
+    acceleration: Time,
+    velocity: Frequency,
+    clockwise: Boolean
+  ) extends Ht91100Request {
     if (acceleration.toSeconds < 0 || acceleration.toSeconds > 10) {
       throw new IllegalArgumentException("Cannot start shaker with acceleration outside of range 0-10 seconds!")
     }
@@ -84,17 +87,17 @@ object defns {
 
     def fromString(string: String): ShakerState =
       string match {
-        case Stopped.asString => Stopped
-        case Running.asString => Running
-        case RampingUp.asString => RampingUp
+        case Stopped.asString     => Stopped
+        case Running.asString     => Running
+        case RampingUp.asString   => RampingUp
         case RampingDown.asString => RampingDown
-        case _ => throw new IllegalArgumentException(s"String $string does not represent a ShakerState!")
+        case _                    => throw new IllegalArgumentException(s"String $string does not represent a ShakerState!")
       }
 
   }
 
   case class Status(setAcceleration: Time, setVelocity: Frequency, actualVelocity: Frequency, state: ShakerState)
-    extends StatusResponse
+      extends StatusResponse
 
   class StatusSerializer extends AvroSerializer[Status]
 
