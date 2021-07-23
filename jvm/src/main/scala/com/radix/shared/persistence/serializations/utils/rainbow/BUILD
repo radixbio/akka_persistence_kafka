@@ -38,3 +38,12 @@ scala_library(
         "@third_party//3rdparty/jvm/com/codecommit:shims",
     ],
 )
+
+scala_test(
+    name = "rainbow-derivations-are-equivalent-to-gen",
+    srcs = ["test/EquivalenceSpec.scala"],
+    deps = [
+        ":rainbow-serialization",
+        "@third_party//3rdparty/jvm/com/lihaoyi:pprint",
+    ],
+)
