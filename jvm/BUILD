@@ -32,6 +32,7 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/bunny:bunny-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/healthcheck:healthcheck-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/rainbow:rainbow-serialization",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/scheduler:scheduler-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/vm:vm-serializations",
     ],
     deps = [
@@ -62,6 +63,7 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/bunny:bunny-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/healthcheck:healthcheck-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/rainbow:rainbow-serialization",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/scheduler:scheduler-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/vm:vm-serializations",
     ],
 )
