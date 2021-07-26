@@ -2,13 +2,7 @@ package com.radix.shared.persistence.serializations.utils.bunny
 
 import java.util.UUID
 
-import com.radix.shared.defs.pipettingrobot.OpentronsPlateModel.{OriginOffset, OriginOffsetUnits, PipetteTipData, PlatePropertiesUnits, WellID, WellProperties, WellPropertiesUnits, WellsU}
-import com.radix.shared.util.prism._
 import com.sksamuel.avro4s.{AvroSchema, Decoder, DefaultFieldMapper, Encoder, FieldMapper, SchemaFor}
-import matryoshka._
-import matryoshka.data.Fix
-import matryoshka.implicits._
-import matryoshka.data.cofree._
 import io.circe.parser.parse
 import org.apache.avro.{Schema, SchemaBuilder}
 import org.apache.avro.generic.{GenericData, GenericRecord}
@@ -18,8 +12,6 @@ import ujson.{read, Js}
 
 import scala.collection.JavaConverters._
 import com.radix.shared.persistence.serializations.squants.schemas._
-import com.radix.shared.util.prism._
-import com.radix.shared.util.prism.implicits._
 import squants.space.{Millilitres, Volume}
 
 import scala.collection.JavaConverters._
