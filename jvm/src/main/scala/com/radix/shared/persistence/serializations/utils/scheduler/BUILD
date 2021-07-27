@@ -22,7 +22,7 @@ scala_library(
         "derivations.scala",
         "uservice/actorInfo.scala",
     ],
-    plugins = ["@third_party//3rdparty/jvm/org/typelevel:kind_projector"],
+    plugins = ["//external:jar/org/typelevel/kind_projector_2_13_6"],
     resources = ["resources/reference.conf"],
     visibility = ["//visibility:public"],
     exports = [

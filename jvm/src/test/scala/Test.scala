@@ -32,16 +32,14 @@ class SampleActor extends PersistentActor {
 
   val receiveCommand: Receive = {
     case msg: Foo =>
-      persist(msg) { _ =>
-      }
+      persist(msg) { _ => }
     case msg: Bar =>
-      persist(msg) { _ =>
-      }
+      persist(msg) { _ => }
   }
   //saveSnapshot(msg ++ "BLAH")*/
 
-  def receiveRecover: PartialFunction[Any, Unit] = {
-    case msg => log.info(msg.toString)
+  def receiveRecover: PartialFunction[Any, Unit] = { case msg =>
+    log.info(msg.toString)
   }
 }
 

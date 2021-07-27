@@ -21,8 +21,8 @@ object protocol {
     val sche = implicitly[SchemaFor[T]]
   }
   object IsomorphismFind {
-    implicit def avro[T: Encoder: Decoder: SchemaFor: ClassTag](
-      implicit A: ExtendedActorSystem
+    implicit def avro[T: Encoder: Decoder: SchemaFor: ClassTag](implicit
+      A: ExtendedActorSystem
     ): AvroSerializer[IsomorphismFind[T]] = new AvroSerializer[IsomorphismFind[T]]
   }
   //NOTE: the list here is since avro can't have a map[T, T], just a map[String, T]

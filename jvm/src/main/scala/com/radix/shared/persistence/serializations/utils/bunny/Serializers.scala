@@ -7,7 +7,6 @@ import io.circe.parser.parse
 import org.apache.avro.{Schema, SchemaBuilder}
 import org.apache.avro.generic.{GenericData, GenericRecord}
 import org.apache.avro.util.Utf8
-import scalaz.{Cofree, Functor}
 import ujson.{read, Js}
 
 import scala.collection.JavaConverters._
@@ -139,9 +138,18 @@ object Protocol {
 
   case class Shift(time: Long) //Do not change names, used by ganttchart js
 
-  case class MachineTableEntry(name: String, replicas: Int, replicasInUse: Int, totalTime: Long) //Do not change names, used by ganttchart js
+  case class MachineTableEntry(
+    name: String,
+    replicas: Int,
+    replicasInUse: Int,
+    totalTime: Long
+  ) //Do not change names, used by ganttchart js
 
-  case class MachineReplicaTableEntry(name: String, nTasks: Int, timeInUse: Long) //Do not change names, used by ganttchart js
+  case class MachineReplicaTableEntry(
+    name: String,
+    nTasks: Int,
+    timeInUse: Long
+  ) //Do not change names, used by ganttchart js
 
   sealed trait ScheduleGenResponse
   case class ScheduleGenResponseRetool(
@@ -171,10 +179,9 @@ object Protocol {
   ) extends RetoolPlotlyPlot(defaultX, defaultY, data)
 
   /**
-   *
-  //This is used by retool to allow clicking. If you click a point
-   it will load the point associated with this time and index
-   We use time and index since that is how the data is sent, as a map of time to list of schedules
+   *  //This is used by retool to allow clicking. If you click a point
+   *   it will load the point associated with this time and index
+   *   We use time and index since that is how the data is sent, as a map of time to list of schedules
    */
   case class RetoolPlotlyMetaData(time: Long, index: Int)
 
@@ -198,10 +205,9 @@ object Serializers {
       override def decode(value: Any): Map[Long, T] =
         value match {
           case map: java.util.Map[_, _] =>
-            map.asScala.toMap.map {
-              case (k, v) =>
-                implicitly[Decoder[Long]]
-                  .decode(k) -> valueDecoder.decode(v)
+            map.asScala.toMap.map { case (k, v) =>
+              implicitly[Decoder[Long]]
+                .decode(k) -> valueDecoder.decode(v)
             }
           case other => sys.error("Unsupported map " + other)
         }
@@ -215,9 +221,8 @@ object Serializers {
       override def encode(map: Map[Long, V]): java.util.Map[String, AnyRef] = {
         require(schema != null)
         val java = new util.HashMap[String, AnyRef]
-        map.foreach {
-          case (k, v) =>
-            java.put(k.toString, encoder.encode(v))
+        map.foreach { case (k, v) =>
+          java.put(k.toString, encoder.encode(v))
         }
         java
       }

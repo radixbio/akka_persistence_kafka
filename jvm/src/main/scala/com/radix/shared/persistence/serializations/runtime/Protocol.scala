@@ -38,7 +38,7 @@ object serializers {
   implicit object MapEncoder extends Encoder[Map[ServiceKey[_], Set[ActorRef[_]]]] {
     override def encode(t: Map[ServiceKey[_], Set[ActorRef[_]]]): AnyRef = {
       val S = implicitly[Encoder[Map[String, Set[ActorRef[_]]]]]
-      S.encode(t.map({ case ((k, v)) => (k.id, v) }))
+      S.encode(t.map({ case (k, v) => (k.id, v) }))
     }
 
     override def schemaFor: SchemaFor[Map[ServiceKey[_], Set[ActorRef[_]]]] = MapSchema

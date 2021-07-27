@@ -90,17 +90,17 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
             .map(record => (KafkaSnapshotKey(record.key), record))
             .dropWhile { case (key, _) => key.sequenceNr < criteria.minSequenceNr }
             .takeWhile({ case (_, record) => record.offset < endOffset - 1 }, inclusive = true)
-            .filter {
-              case (key, _) => criteria.minSequenceNr <= key.sequenceNr && key.sequenceNr <= criteria.maxSequenceNr
+            .filter { case (key, _) =>
+              criteria.minSequenceNr <= key.sequenceNr && key.sequenceNr <= criteria.maxSequenceNr
             }
-            .filter {
-              case (key, _) => criteria.minTimestamp <= key.timestamp && key.timestamp <= criteria.maxTimestamp
+            .filter { case (key, _) =>
+              criteria.minTimestamp <= key.timestamp && key.timestamp <= criteria.maxTimestamp
             }
             .runWith(Sink.seq)
 
         } yield {
           records
-          /* In the event two records have the same sequence Id,
+            /* In the event two records have the same sequence Id,
              * prefer the one with the largest offset.
              */
             .groupBy { case (key, _) => key.sequenceNr }
@@ -114,10 +114,9 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
             .filter { case (_, record) => record.value != null }
             .sortBy { case (key, _) => key.sequenceNr }
             .sortBy { case (key, _) => key.sequenceNr }
-            .map {
-              case (key, record) =>
-                val metadata = SnapshotMetadata(persistenceId, key.sequenceNr, key.timestamp)
-                SelectedSnapshot(metadata, record.value)
+            .map { case (key, record) =>
+              val metadata = SnapshotMetadata(persistenceId, key.sequenceNr, key.timestamp)
+              SelectedSnapshot(metadata, record.value)
             }
         }
       } else {
@@ -143,9 +142,8 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
     Source
       .single(AnyAvroToSerializedObject(serializationExtension, snapshot))
       .mapAsync(1)(Future.fromTry)
-      .map {
-        case (_, obj) =>
-          new ProducerRecord(metadata.persistenceId + snapshotPostfix, 0, KafkaSnapshotKey(metadata).toString, obj)
+      .map { case (_, obj) =>
+        new ProducerRecord(metadata.persistenceId + snapshotPostfix, 0, KafkaSnapshotKey(metadata).toString, obj)
       }
       .map { pr =>
         ProducerMessage.single(pr, NotUsed)

@@ -40,11 +40,12 @@ object UntypedEchoActor {
   }
 }
 
-class TypedActorSerializationSpec extends ScalaTestWithActorTestKit(
-  """
+class TypedActorSerializationSpec
+    extends ScalaTestWithActorTestKit("""
     |akka.actor.serializers.echo-serializer = "com.radix.shared.persistence.test.TypedEchoSerializer"
     |akka.actor.serialization-bindings."com.radix.shared.persistence.test.TypedEchoActor$Echo" = "echo-serializer"
-    |""".stripMargin) with WordSpecLike {
+    |""".stripMargin)
+    with WordSpecLike {
   "Typed ActorRefs must (de)serialize correctly" in {
     val serialization = SerializationExtension(system.toUntyped)
     val probe = testKit.createTestProbe[NotUsed]()
@@ -69,34 +70,35 @@ class TypedActorSerializationSpec extends ScalaTestWithActorTestKit(
 }
 
 object UntypedActorSerializationSpec {
-  val config: Config = ConfigFactory.parseString(
-    """
+  val config: Config = ConfigFactory.parseString("""
       |akka.actor.serializers.echo-serializer = "com.radix.shared.persistence.test.UntypedEchoSerializer"
       |akka.actor.serialization-bindings."com.radix.shared.persistence.test.UntypedEchoActor$Echo" = "echo-serializer"
       |""".stripMargin)
 }
 
-class UntypedActorSerializationSpec extends TestKit(ActorSystem("UntypedActorSerializationSpec", UntypedActorSerializationSpec.config))
-  with Matchers with WordSpecLike {
-    "Untyped ActorRefs must (de)serialize correctly" in {
-      val serialization = SerializationExtension(system)
-      val probe = TestProbe()
-      val testMsg = UntypedEchoActor.Echo("untyped foo", probe.ref)
-      Console.println(s"Message: $testMsg")
-      serialization.findSerializerFor(testMsg) match {
-        case avro: AvroSerializer[_] =>
-          serialization.serialize(testMsg) match {
-            case Success(serializedTestMsg) =>
-              val identifier = avro.identifier
-              val manifest = avro.manifest(testMsg)
-              serialization.deserialize(serializedTestMsg, identifier, manifest) match {
-                case Success(deserializedTestMsg) =>
-                  deserializedTestMsg should ===(testMsg)
-                case Failure(exception) => fail(s"failed to deserialize: $exception")
-              }
+class UntypedActorSerializationSpec
+    extends TestKit(ActorSystem("UntypedActorSerializationSpec", UntypedActorSerializationSpec.config))
+    with Matchers
+    with WordSpecLike {
+  "Untyped ActorRefs must (de)serialize correctly" in {
+    val serialization = SerializationExtension(system)
+    val probe = TestProbe()
+    val testMsg = UntypedEchoActor.Echo("untyped foo", probe.ref)
+    Console.println(s"Message: $testMsg")
+    serialization.findSerializerFor(testMsg) match {
+      case avro: AvroSerializer[_] =>
+        serialization.serialize(testMsg) match {
+          case Success(serializedTestMsg) =>
+            val identifier = avro.identifier
+            val manifest = avro.manifest(testMsg)
+            serialization.deserialize(serializedTestMsg, identifier, manifest) match {
+              case Success(deserializedTestMsg) =>
+                deserializedTestMsg should ===(testMsg)
+              case Failure(exception) => fail(s"failed to deserialize: $exception")
+            }
 
-            case Failure(exception) => fail(s"failed to serialize: $exception")
-          }
-      }
+          case Failure(exception) => fail(s"failed to serialize: $exception")
+        }
+    }
   }
 }

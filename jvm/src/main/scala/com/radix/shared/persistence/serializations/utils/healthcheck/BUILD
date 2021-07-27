@@ -5,7 +5,7 @@ package(
 scala_library(
     name = "healthcheck-serialization",
     srcs = ["Serializers.scala"],
-    plugins = ["@third_party//3rdparty/jvm/org/typelevel:kind_projector"],
+    plugins = ["//external:jar/org/typelevel/kind_projector_2_13_6"],
     resources = ["resources/reference.conf"],
     exports = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",

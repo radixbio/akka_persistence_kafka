@@ -9,7 +9,10 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class KafkaJournalTest
-  extends JournalSpec(ConfigFactory.load.withValue("akka.remote.netty.tcp.port", ConfigFactory.parseString("{port: 2554}").getValue("port")))
+    extends JournalSpec(
+      ConfigFactory.load
+        .withValue("akka.remote.netty.tcp.port", ConfigFactory.parseString("{port: 2554}").getValue("port"))
+    )
     with EmbeddedKafka {
 
   override def supportsRejectingNonSerializableObjects: CapabilityFlag = CapabilityFlag.on
@@ -22,7 +25,7 @@ class KafkaJournalTest
         kafkaPort = 9092,
         zooKeeperPort = 2181,
         schemaRegistryPort = 8081,
-        avroCompatibilityLevel = AvroCompatibilityLevel.FULL
+        customSchemaRegistryProperties = Map("schema.compatibility.level" -> "full")
       )
     EmbeddedKafka.start()
 
@@ -30,7 +33,7 @@ class KafkaJournalTest
   }
 
   override def afterAll(): Unit = {
-  // both of these cause the test to fail for no reason
+    // both of these cause the test to fail for no reason
 //  super.afterAll()
 //    Await.result(system.terminate(), 10.seconds)
 

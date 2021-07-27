@@ -88,7 +88,7 @@ object DriverSerializer {
       if ((num & eiMask) == 0) {
         Array(num.toByte)
       } else {
-        Array(((num & 0x7F) | 0x80).toByte) ++ doGroup(num >>> 7)
+        Array(((num & 0x7f) | 0x80).toByte) ++ doGroup(num >>> 7)
       }
     }
     private def decodeInt(src: Array[Byte]): (Int, Int) = {
@@ -104,10 +104,10 @@ object DriverSerializer {
         case None => (0, 0)
         case Some(b) =>
           if ((b & 0x80) == 0) {
-            ((b & 0x7F) << (shift * 7), shift + 1)
+            ((b & 0x7f) << (shift * 7), shift + 1)
           } else {
             val rem = decodeUInt(src.tail, shift + 1)
-            val x = ((b & 0x7F) << (shift * 7)) | rem._1
+            val x = ((b & 0x7f) << (shift * 7)) | rem._1
             (x, rem._2)
           }
       }

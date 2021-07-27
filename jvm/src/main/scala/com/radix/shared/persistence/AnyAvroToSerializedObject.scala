@@ -33,8 +33,8 @@ object AnyAvroToSerializedObject {
           assert(!freader.hasNext)
           (Some(otherSerializer.identifier), res.asInstanceOf[Object])
           /* Do not try to hide the fact that serialization failed. This should fail noisily.
-         * .recover { case exn: Exception => otherSerializer.toBinary(other.asInstanceOf[AnyRef]) }
-         */
+           * .recover { case exn: Exception => otherSerializer.toBinary(other.asInstanceOf[AnyRef]) }
+           */
         }
     }
   }
