@@ -14,13 +14,11 @@ import com.radix.shared.persistence.ActorRefSerializer._
 import com.radix.utils.scheduler.SchedulerInputImplementation.ConsumerProducer
 import com.radix.utils.scheduleruservice.SchedulerActorProtocol.{USchedulerRequest, USchedulerResponse}
 
-object derivations {
-}
+object derivations {}
 
 object Serializers {
 
-  class USchedulerRequestPersist(implicit eas: ExtendedActorSystem)
-      extends AvroSerializer[USchedulerRequest]
+  class USchedulerRequestPersist(implicit eas: ExtendedActorSystem) extends AvroSerializer[USchedulerRequest]
 
   class USchedulerResponsePersist extends AvroSerializer[USchedulerResponse]
 
