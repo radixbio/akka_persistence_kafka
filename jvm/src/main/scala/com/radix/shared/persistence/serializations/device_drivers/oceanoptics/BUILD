@@ -3,7 +3,7 @@ package(
 )
 
 scala_library(
-    name = "omnidriver-serializations",
+    name = "oceanoptics-serializations",
     srcs = [
         "actorInfo.scala",
         "defns.scala",

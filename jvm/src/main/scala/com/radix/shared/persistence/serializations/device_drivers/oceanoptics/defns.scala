@@ -1,4 +1,6 @@
-package com.radix.shared.persistence.serializations.device_drivers.omnidriver
+package com.radix.shared.persistence.serializations.device_drivers.oceanoptics
+
+import java.time.Instant
 
 import akka.actor.ExtendedActorSystem
 import com.radix.shared.persistence.ActorRefSerializer._
@@ -9,31 +11,31 @@ import squants.Time
 import squants.space.Length
 
 object defns {
-  sealed trait OmnidriverEvent
 
-  class OmnidriverEventSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[OmnidriverEvent]
+  sealed trait OceanOpticsEvent
 
-  case class OmnidriverRequestResponseEvent(request: OmnidriverRequest, response: OmnidriverResponse)
-      extends OmnidriverEvent
+  class OceanOpticsEventSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[OceanOpticsEvent]
 
-  class OmnidriverRequestResponseEventSerializer(implicit eas: ExtendedActorSystem)
-      extends AvroSerializer[OmnidriverRequestResponseEvent]
+  case class OceanOpticsRequestResponseEvent(request: OceanOpticsRequest, response: OceanOpticsResponse) extends OceanOpticsEvent
 
-  sealed trait OmnidriverRequest {
+  class OceanOpticsRequestResponseEventSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[OceanOpticsRequestResponseEvent]
+
+  // TODO: add stability test switching
+  sealed trait OceanOpticsRequest {
     val replyTo: Option[ActorRef[CommonResponse]]
   }
 
-  class OmnidriverRequestSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[OmnidriverRequest]
+  class OceanOpticsRequestSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[OceanOpticsRequest]
 
-  sealed trait OmnidriverResponse
+  sealed trait OceanOpticsResponse
 
-  class OmnidriverResponseSerializer extends AvroSerializer[OmnidriverResponse]
+  class OceanOpticsResponseSerializer extends AvroSerializer[OceanOpticsResponse]
 
-  case class GetMetadata(replyTo: Option[ActorRef[MetadataResponse]]) extends OmnidriverRequest
+  case class GetMetadata(replyTo: Option[ActorRef[MetadataResponse]]) extends OceanOpticsRequest
 
   class GetMetadataSerializer(implicit extendedActorSystem: ExtendedActorSystem) extends AvroSerializer[GetMetadata]
 
-  sealed trait MetadataResponse extends OmnidriverResponse
+  sealed trait MetadataResponse extends OceanOpticsResponse
 
   class MetadataResponseSerializer extends AvroSerializer[MetadataResponse]
 
@@ -41,20 +43,20 @@ object defns {
 
   class MetadataSerializer extends AvroSerializer[Metadata]
 
-  case class GetAcquisitionParameters(replyTo: Option[ActorRef[AcquisitionParameterResponse]]) extends OmnidriverRequest
+  case class GetAcquisitionParameters(replyTo: Option[ActorRef[AcquisitionParameterResponse]]) extends OceanOpticsRequest
 
   class GetAcquisitionParametersSerializer(implicit extendedActorSystem: ExtendedActorSystem)
       extends AvroSerializer[GetAcquisitionParameters]
 
   case class SetAcquisitionParameters(
     replyTo: Option[ActorRef[AcquisitionParameterResponse]],
-    lampOn: Option[Boolean]
-  ) extends OmnidriverRequest
+    lampOn: Option[Boolean],
+  ) extends OceanOpticsRequest
 
   class SetAcquisitionParametersSerializer(implicit extendedActorSystem: ExtendedActorSystem)
       extends AvroSerializer[SetAcquisitionParameters]
 
-  sealed trait AcquisitionParameterResponse extends OmnidriverResponse
+  sealed trait AcquisitionParameterResponse extends OceanOpticsResponse
 
   class AcquisitionParameterResponseSerializer extends AvroSerializer[AcquisitionParameterResponse]
 
@@ -65,12 +67,12 @@ object defns {
 
   class AcquisitionParametersSerializer extends AvroSerializer[AcquisitionParameters]
 
-  case class SetIntegrationTime(replyTo: Option[ActorRef[SetIntegrationTimeResponse]], time: Time)
-      extends OmnidriverRequest
+  case class SetIntegrationTime(replyTo: Option[ActorRef[SetIntegrationTimeResponse]],
+                                time: Time) extends OceanOpticsRequest
 
   class SetIntegrationTimeSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[SetIntegrationTime]
 
-  sealed trait SetIntegrationTimeResponse extends OmnidriverResponse
+  sealed trait SetIntegrationTimeResponse extends OceanOpticsResponse
 
   class SetIntegrationTimeResponseSerializer extends AvroSerializer[SetIntegrationTimeResponse]
 
@@ -82,12 +84,12 @@ object defns {
 
   class IntegrationTimeSetSerializer extends AvroSerializer[IntegrationTimeSet]
 
-  case class GetOperatingParameters(replyTo: Option[ActorRef[OperatingParametersResponse]]) extends OmnidriverRequest
+  case class GetOperatingParameters(replyTo: Option[ActorRef[OperatingParametersResponse]]) extends OceanOpticsRequest
 
   class GetOperatingParametersSerializer(implicit extendedActorSystem: ExtendedActorSystem)
       extends AvroSerializer[GetOperatingParameters]
 
-  sealed trait OperatingParametersResponse extends OmnidriverResponse
+  sealed trait OperatingParametersResponse extends OceanOpticsResponse
 
   class OperatingParametersResponseSerializer extends AvroSerializer[OperatingParametersResponse]
 
@@ -103,25 +105,37 @@ object defns {
 
   class OperatingParametersSerializer extends AvroSerializer[OperatingParameters]
 
-  case class GetSpectrum(replyTo: Option[ActorRef[SpectrumResponse]]) extends OmnidriverRequest
+  case class SetStabilityScan(needsStabilityScan: Boolean, replyTo: Option[ActorRef[SetStabilityScanResponse]])
+    extends OceanOpticsRequest
+
+  class SetStabilityScanSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[SetStabilityScan]
+
+  sealed trait SetStabilityScanResponse extends OceanOpticsResponse
+
+  class SetStabilityScanResponseSerializer extends AvroSerializer[SetStabilityScanResponse]
+
+  case object StabilitySetResponse extends SetStabilityScanResponse
+
+  case class GetSpectrum(replyTo: Option[ActorRef[SpectrumResponse]]) extends OceanOpticsRequest
 
   class GetSpectrumSerializer(implicit extendedActorSystem: ExtendedActorSystem) extends AvroSerializer[GetSpectrum]
 
-  sealed trait SpectrumResponse extends OmnidriverResponse
+  sealed trait SpectrumResponse extends OceanOpticsResponse
 
   class SpectrumResponseSerializer extends AvroSerializer[SpectrumResponse]
 
-  case class Spectrum(spectrum: Array[Double], saturated: Boolean, wavelengths: Array[Length]) extends SpectrumResponse
+  case class Spectrum(spectrum: Array[Double], saturated: Boolean, wavelengths: Array[Length], timestamp: Instant) extends SpectrumResponse
 
   class SpectrumSerializer extends AvroSerializer[Spectrum]
 
   sealed trait CommonResponse
-      extends OmnidriverResponse
+      extends OceanOpticsResponse
       with MetadataResponse
       with AcquisitionParameterResponse
       with SpectrumResponse
       with OperatingParametersResponse
       with SetIntegrationTimeResponse
+      with SetStabilityScanResponse
 
   class CommonResponseSerializer extends AvroSerializer[CommonResponse]
 

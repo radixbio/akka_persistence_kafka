@@ -3,7 +3,8 @@ package com.radix.shared.persistence.serializations.squants
 import io.circe._
 import squants.space.{Length, Volume}
 import squants.thermal.Temperature
-import squants.{Temperature, Volume} //this is necessary
+import squants.time.{Frequency, Time}
+import squants.{Temperature, Time, Volume} //this is necessary
 
 object Serializers {
   implicit val tempEncoder: Encoder[Temperature] = Encoder.encodeString.contramap { _.toString }
@@ -21,4 +22,13 @@ object Serializers {
     Length(str).toOption.toRight("length")
   }
 
+  implicit val timeEncoder: Encoder[Time] = Encoder.encodeString.contramap { _.toString }
+  implicit val timeDecoder: Decoder[Time] = Decoder.decodeString.emap { str =>
+    Time(str).toOption.toRight("time")
+  }
+
+  implicit val frequencyEncoder: Encoder[Frequency] = Encoder.encodeString.contramap(_.toString())
+  implicit val frequencyDecoder: Decoder[Frequency] = Decoder.decodeString.emap { str =>
+    Frequency(str).toOption.toRight("frequency")
+  }
 }
