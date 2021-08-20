@@ -1,10 +1,13 @@
 package com.radix.shared.persistence.serializations.device_drivers.tfexactive
 
 import akka.actor.typed.receptionist.ServiceKey
-import com.radix.shared.persistence.serializations.device_drivers.tfexactive.defns.TFExactiveRequest
 
+import com.radix.shared.persistence.serializations.device_drivers.tfexactive.defns.{TFExactiveRequest, TFExactiveSeqRequest, TFExactiveStdRequest}
 import scala.reflect.ClassTag
 
+import com.radix.shared.persistence.serializations.device_drivers.common.requests.DriverRequest
+
 object actorInfo {
-  val skey = ServiceKey[TFExactiveRequest]("tf-exactive-actor")
+  val stdKey = ServiceKey[DriverRequest[TFExactiveStdRequest]]("tf-exactive-actor")
+  val seqKey = ServiceKey[DriverRequest[TFExactiveSeqRequest]]("tf-exactive-sequence-actor")
 }
