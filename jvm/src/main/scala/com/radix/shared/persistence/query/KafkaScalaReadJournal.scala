@@ -15,7 +15,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.{Deserializer, StringDeserializer}
 import akka.pattern.ask
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import akka.util.Timeout
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -33,7 +33,7 @@ class KafkaScalaReadJournal(system: ExtendedActorSystem, cfg: Config)
   val localConfig: KafkaConfig = new KafkaConfig(cfg)
   implicit val timeout: Timeout = Timeout(5.seconds)
   //implicit val context: ActorContext = system
-  //implicit val mat: ActorMaterializer = ActorMaterializer()
+  //implicit val mat: Materializer = Materializer(system)
 
   private val consumerSettings: ConsumerSettings[String, Object] = {
     val valueDeserializer = new KafkaAvroDeserializer().asInstanceOf[Deserializer[Object]]

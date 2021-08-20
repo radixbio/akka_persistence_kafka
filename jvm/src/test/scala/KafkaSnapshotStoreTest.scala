@@ -13,7 +13,7 @@ import scala.concurrent.duration._
 class KafkaSnapshotStoreTest
     extends SnapshotStoreSpec(
       ConfigFactory.load
-        .withValue("akka.remote.netty.tcp.port", ConfigFactory.parseString("{port: 2555}").getValue("port"))
+        .withValue("akka.remote.artery.canonical.port", ConfigFactory.parseString("{port: 2555}").getValue("port"))
     )
     with EmbeddedKafka
     with Matchers {

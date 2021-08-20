@@ -1,6 +1,7 @@
 package com.radix.shared.persistence
 
 import akka.NotUsed
+import akka.actor.typed.ActorSystem
 import akka.actor.{ActorLogging, ActorRef}
 import akka.cluster.ddata.{DistributedData, GCounter, GCounterKey, SelfUniqueAddress}
 import akka.cluster.ddata.Replicator.{Get, GetSuccess, NotFound, ReadLocal, Update, WriteLocal}
@@ -16,7 +17,7 @@ import akka.kafka.scaladsl.Consumer.DrainingControl
 import akka.persistence.{AtomicWrite, PersistentRepr}
 import akka.persistence.journal.{AsyncRecovery, AsyncWriteJournal}
 import akka.serialization.{Serialization, SerializationExtension}
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import akka.stream.scaladsl.{Keep, Sink, Source}
 import io.confluent.kafka.serializers.{KafkaAvroDeserializer, KafkaAvroSerializer}
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -40,7 +41,7 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
   private val localConfig = new KafkaConfig(cfg)
 
   val serializationExtension: Serialization = SerializationExtension(context.system)
-  implicit val mat: ActorMaterializer = ActorMaterializer()
+  implicit val mat: Materializer = Materializer(context.system)
   implicit val timeout: Timeout = Timeout(5.seconds)
 
   private val producerSettings: ProducerSettings[String, Object] = {

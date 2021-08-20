@@ -11,7 +11,8 @@ import akka.testkit.{TestKit, TestProbe}
 import akka.serialization.SerializationExtension
 import akka.actor.typed.scaladsl.adapter._
 import com.typesafe.config.{Config, ConfigFactory}
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.WordSpecLike
+import org.scalatest.matchers.should.Matchers
 import scala.util.{Failure, Success}
 
 class ActorRefAvroSerializer[T](implicit currentSystem: ExtendedActorSystem) extends AvroSerializer[ActorRef[T]]
@@ -47,7 +48,7 @@ class TypedActorSerializationSpec
     |""".stripMargin)
     with WordSpecLike {
   "Typed ActorRefs must (de)serialize correctly" in {
-    val serialization = SerializationExtension(system.toUntyped)
+    val serialization = SerializationExtension(system.toClassic)
     val probe = testKit.createTestProbe[NotUsed]()
     val testMsg = TypedEchoActor.Echo("typed foo", probe.ref)
     Console.println(s"Message: $testMsg")

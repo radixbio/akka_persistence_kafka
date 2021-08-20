@@ -2,19 +2,21 @@ package com.radix.shared.persistence
 
 import akka.NotUsed
 import akka.actor.ActorRef
+import akka.actor.typed.ActorSystem
 import akka.kafka.Metadata.{EndOffsets, GetEndOffsets, ListTopics, Topics}
 import akka.kafka.{CommitterSettings, ConsumerSettings, KafkaConsumerActor, ProducerMessage, ProducerSettings, Subscriptions}
 import akka.kafka.scaladsl.{Consumer, Producer}
 import akka.persistence.{SelectedSnapshot, SnapshotMetadata, SnapshotSelectionCriteria}
 import akka.persistence.snapshot.SnapshotStore
 import akka.serialization.{Serialization, SerializationExtension}
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.typesafe.config.Config
 import io.confluent.kafka.serializers.{KafkaAvroDeserializer, KafkaAvroSerializer}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDeserializer, StringSerializer}
+
 import scala.collection.immutable.Seq
 import akka.pattern.ask
 import akka.util.Timeout
@@ -28,7 +30,7 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
   private val localConfig = new KafkaConfig(cfg)
 
   val serializationExtension: Serialization = SerializationExtension(context.system)
-  implicit val mat: ActorMaterializer = ActorMaterializer()
+  implicit val mat: Materializer = Materializer(context.system)
   implicit val timeout: Timeout = Timeout(5.seconds)
 
   private val producerSettings: ProducerSettings[String, Object] = {

@@ -105,6 +105,8 @@ scala_test(
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_testkit_typed",
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_cluster_typed",
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_testkit",
+        "@third_party//3rdparty/jvm/org/scalatest",
+        "@third_party//3rdparty/jvm/org/scalatest:scalatest_shouldmatchers",
     ],
 )
 
