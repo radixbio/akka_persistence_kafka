@@ -14,7 +14,7 @@ import java.util
 
 import akka.persistence.SnapshotMetadata
 import com.radix.rainbow._
-import com.radix.rainbow.URainbow.{CommandMetadata, RainbowCommandAndReverse, RainbowHistoricalResponse, RainbowHistoricalResponseWithParents, RainbowModifyCommand, URainbowEvent, UpdateRainbow, ValidReverse}
+import com.radix.rainbow.URainbow.{AddSubscriber, CommandMetadata, RainbowCommandAndReverse, RainbowHistoricalResponse, RainbowHistoricalResponseWithParents, RainbowModifyCommand, URainbowEvent, UpdateRainbow, ValidReverse}
 import com.radix.rainbow.URainbow.UTypes.{ID, Metadata, RainbowMetaSerialized}
 import com.radix.shared.persistence.AvroSerializer
 import com.radix.utils.rainbowuservice.RainbowActorProtocol
@@ -838,10 +838,12 @@ object Serializers {
       extends AvroSerializer[RainbowActorProtocol.URainbowModifyCommand] // gen
   class URainbowCasModifyCommandPersist(implicit eas: ExtendedActorSystem)
       extends AvroSerializer[RainbowActorProtocol.URainbowCasModifyCommand] // gen
-  class URainbowEventPersist extends AvroSerializer[URainbowEvent] // gen
+  class URainbowEventPersist(implicit eas: ExtendedActorSystem) extends AvroSerializer[URainbowEvent] // gen
   class UpdateRainbowPersist extends AvroSerializer[UpdateRainbow] // gen
+  class AddSubscriberPersist(implicit eas: ExtendedActorSystem) extends AvroSerializer[AddSubscriber]
   class URainbowModifyListPersist(implicit eas: ExtendedActorSystem)
       extends AvroSerializer[RainbowActorProtocol.URainbowModifyList] // gen
+  class URainbowSubscribePersist(implicit eas: ExtendedActorSystem) extends AvroSerializer[RainbowActorProtocol.URainbowSubscribe]
   class RainbowResponsePersist extends AvroSerializer[RainbowActorProtocol.RainbowResponse] // gen
   class RainbowResponseHistoryPersist extends AvroSerializer[RainbowActorProtocol.RainbowHistoryResponse] // ok
   class RainbowResponseHistoryParentsPersist
