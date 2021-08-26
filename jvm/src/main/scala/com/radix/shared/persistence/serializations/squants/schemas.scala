@@ -4,7 +4,7 @@ import com.radix.shared.persistence.serializations.squants.units._
 import com.sksamuel.avro4s.{Decoder, Encoder, FieldMapper, SchemaFor}
 import org.apache.avro.generic.{GenericData, GenericRecord}
 import org.apache.avro.{Schema, SchemaBuilder}
-import squants.motion.VolumeFlow
+import squants.motion.{Velocity, VolumeFlow}
 import squants.space.{Length, Volume}
 import squants.thermal.Temperature
 import squants.time.{Frequency, Time}
@@ -84,6 +84,20 @@ object schemas {
         .endRecord()
     override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
   }
+
+  implicit object SchemaForVelocity extends SchemaFor[Velocity] {
+    override def schema: Schema =
+      SchemaBuilder
+        .builder("org.typelevel.squants")
+        .record("velocity")
+        .fields()
+        .requiredDouble("velocity")
+        .requiredString("unit")
+        .endRecord()
+
+    override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
+  }
+
 
   implicit object TimeEncoder extends Encoder[Time] {
     override def encode(t: Time): AnyRef = {
@@ -178,6 +192,32 @@ object schemas {
     }
     override def schemaFor: SchemaFor[Volume] = SchemaForVolume
   }
+
+  implicit object VelocityEncoder extends Encoder[Velocity] {
+    override def encode(t: Velocity): AnyRef = {
+      val record = new GenericData.Record(schema)
+      record.put("velocity", t.value)
+      record.put("unit", t.unit.symbol)
+      record
+    }
+
+    override def schemaFor: SchemaFor[Velocity] = SchemaForVelocity
+  }
+
+  implicit object VelocityDecoder extends Decoder[Velocity] {
+    override def decode(value: Any): Velocity = {
+      val record = value.asInstanceOf[GenericRecord]
+      val parsed = record.get("velocity").toString + " " + record.get("unit").toString
+      Velocity(parsed).getOrElse(
+        throw new IllegalStateException(
+          s"AVRO failed to deserialize in radix code. $parsed is not a valid squants.Velocity"
+        )
+      )
+    }
+
+    override def schemaFor: SchemaFor[Velocity] = SchemaForVelocity
+  }
+
 
   implicit object VolumeFlowEncoder extends Encoder[VolumeFlow] {
     def encode(t: VolumeFlow): AnyRef = {
