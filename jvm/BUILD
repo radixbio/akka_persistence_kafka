@@ -133,7 +133,6 @@ scala_test(
 scala_test(
     name = "generic-serialization-test",
     srcs = [
-        "src/test/scala/GenericSerzTest.scala",
         "src/test/scala/Test.scala",
     ],
     resources = ["src/test/resources/application.conf"],
