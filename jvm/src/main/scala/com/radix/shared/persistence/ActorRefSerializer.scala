@@ -6,7 +6,7 @@ import org.apache.avro.{Schema, SchemaBuilder}
 import akka.actor.{ExtendedActorSystem, ActorRef => UActorRef}
 import akka.actor.typed.scaladsl.adapter._
 import akka.serialization.Serialization
-import akka.stream.{SourceRef, StreamRefResolver}
+import akka.stream.{SinkRef, SourceRef, StreamRefResolver}
 
 object ActorRefSerializer {
   implicit def SchemaForTypedActorRef[T]: SchemaFor[ActorRef[T]] = new SchemaFor[ActorRef[T]] {
@@ -61,7 +61,6 @@ object ActorRefSerializer {
   implicit def SchemaForSourceRef[T]: SchemaFor[SourceRef[T]] = new SchemaFor[SourceRef[T]] {
     override def schema: Schema = SchemaBuilder.builder.stringType()
     override def fieldMapper: FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
-
   }
 
   implicit def EncoderForSourceRef[T](implicit eas: ExtendedActorSystem): Encoder[SourceRef[T]] =
@@ -76,5 +75,24 @@ object ActorRefSerializer {
       override def decode(value: Any): SourceRef[T] =
         StreamRefResolver.get(eas).resolveSourceRef(value.toString)
       override def schemaFor: SchemaFor[SourceRef[T]] = SchemaForSourceRef
+    }
+
+  implicit def SchemaForSinkRef[T]: SchemaFor[SinkRef[T]] = new SchemaFor[SinkRef[T]] {
+    override def schema: Schema = SchemaBuilder.builder.stringType()
+    override def fieldMapper: FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
+  }
+
+  implicit def EncoderForSinkRef[T](implicit eas: ExtendedActorSystem): Encoder[SinkRef[T]] =
+    new Encoder[SinkRef[T]] {
+      override def encode(ref: SinkRef[T]): AnyRef =
+        StreamRefResolver.get(eas).toSerializationFormat(ref)
+      override def schemaFor: SchemaFor[SinkRef[T]] = SchemaForSinkRef
+
+    }
+  implicit def DecoderForSinkRef[T](implicit eas: ExtendedActorSystem): Decoder[SinkRef[T]] =
+    new Decoder[SinkRef[T]] {
+      override def decode(value: Any): SinkRef[T] =
+        StreamRefResolver.get(eas).resolveSinkRef(value.toString)
+      override def schemaFor: SchemaFor[SinkRef[T]] = SchemaForSinkRef
     }
 }

@@ -6,59 +6,107 @@ import akka.actor.ExtendedActorSystem
 import akka.actor.typed.ActorRef
 import akka.stream.SourceRef
 import com.radix.rainbow.Offset
+import com.radix.rainbow.URainbow.RainbowModifyCommand
 import com.radix.rainbow.URainbow.UTypes.RainbowMetaSerialized
 import com.radix.shared.persistence.AvroSerializer
 import com.radix.shared.persistence.ActorRefSerializer._
-import squants.Volume
-import squants.space.Volume
+import squants.{Volume, VolumeFlow}
+import squants.space.{Microlitres, Volume}
 import com.radix.shared.persistence.serializations.squants.schemas._
+import com.radix.shared.persistence.ActorRefSerializer._
+import com.radix.utils.rainbowuservice.RainbowActorProtocol.URainbowCommand
 import com.sksamuel.avro4s.{Decoder, Encoder, FieldMapper, SchemaFor}
 import org.apache.avro.Schema
 
 object defns {
 
-  sealed trait PipetteCommand
+  sealed trait PipetteCommand {
+    val pipette: Option[List[UUID]]
+  }
   final case class AspirateCommand(
-    world: RainbowMetaSerialized,
-    labwareUID: String,
-    wellUID: String,
+    wellPtr: List[UUID],
+    pipette: Option[List[UUID]],
     volume: Volume,
+    rate: VolumeFlow,
     position: Offset
   ) extends PipetteCommand
+  object AspirateCommand {
+    def apply(wellPtr: List[UUID], pipette: Option[List[UUID]], volume: Volume, rate: VolumeFlow): AspirateCommand =
+      AspirateCommand(wellPtr, pipette, volume, rate, Offset())
+
+  }
 
   final case class DispenseCommand(
-    world: RainbowMetaSerialized,
-    labwareUID: String,
-    wellUID: String,
+    wellPtr: List[UUID],
+    pipette: Option[List[UUID]],
     volume: Volume,
+    rate: VolumeFlow,
     position: Offset
   ) extends PipetteCommand
 
-  final case class PickUpTipCommand(world: RainbowMetaSerialized, labwareUID: String, wellUID: String, position: Offset)
+  object DispenseCommand {
+    def apply(wellPtr: List[UUID], pipette: Option[List[UUID]], volume: Volume, rate: VolumeFlow): DispenseCommand = {
+      DispenseCommand(wellPtr, pipette, volume, rate, Offset())
+    }
+  }
+
+  final case class MoveCommand(
+    wellPtr: List[UUID],
+    pipette: Option[List[UUID]],
+    position: Offset
+  ) extends PipetteCommand
+
+  object MoveCommand {
+    def apply(wellPtr: List[UUID], pipette: Option[List[UUID]]): MoveCommand = {
+      new MoveCommand(wellPtr, pipette, Offset())
+    }
+  }
+
+  final case class PickUpTipCommand(wellPtr: List[UUID], pipette: Option[List[UUID]], position: Offset)
       extends PipetteCommand
 
-  final case class DropTipCommand(world: RainbowMetaSerialized, labwareUID: String, wellUID: String, position: Offset)
-      extends PipetteCommand
+  object PickUpTipCommand {
+    def apply(wellPtr: List[UUID], pipette: Option[List[UUID]]): PickUpTipCommand = {
+      PickUpTipCommand(wellPtr, pipette, Offset())
+    }
+  }
 
-  final case class DelayCommand(time: Float, message: Option[String]) extends PipetteCommand
+  final case class DropTipCommand(wellPtr: List[UUID], pipette: Option[List[UUID]], position: Offset)
+      extends PipetteCommand
+  object DropTipCommand {
+    def apply(wellPtr: List[UUID], pipette: Option[List[UUID]]): DropTipCommand =
+      DropTipCommand(wellPtr, pipette, Offset())
+  }
+
+  final case class DelayCommand(time: Float, message: Option[String]) extends PipetteCommand {
+    override val pipette = None
+  }
 
   final case class BlowoutCommand(
-    world: RainbowMetaSerialized,
-    labwareUID: String,
-    wellUID: String,
+    wellPtr: List[UUID],
+    pipette: Option[List[UUID]],
     volume: Volume,
     position: Offset
   ) extends PipetteCommand
+  object BlowoutCommand {
+    def apply(wellPtr: List[UUID], pipette: Option[List[UUID]], volume: Volume): BlowoutCommand = {
+      BlowoutCommand(wellPtr, pipette, volume, Offset())
+    }
+  }
 
   final case class TouchTipCommand(
-    world: RainbowMetaSerialized,
-    labwareUID: String,
-    wellUID: String,
+    wellPtr: List[UUID],
+    pipette: Option[List[UUID]],
     volume: Volume,
     position: Offset
   ) extends PipetteCommand
 
-  final case class PipetteProcedure(steps: List[PipetteCommand])
+  object TouchTipCommand {
+    def apply(wellPtr: List[UUID], pipette: Option[List[UUID]], volume: Volume): TouchTipCommand = {
+      TouchTipCommand(wellPtr, pipette, volume, Offset())
+    }
+  }
+
 
   class OpentronsAspirateSerializer extends AvroSerializer[AspirateCommand]
   class OpentronsDispenseSerializer extends AvroSerializer[DispenseCommand]
@@ -71,37 +119,38 @@ object defns {
   sealed trait OpentronsRequest
 
   final case class OpentronsOrder(
-    world: SourceRef[RainbowMetaSerialized],
-    opentronsUUID: String,
     steps: SourceRef[PipetteCommand],
-    replyToOpt: Option[akka.actor.typed.ActorRef[OpentronsReply]]
+    replyToOpt: Option[ActorRef[OpentronsReply]]
   ) extends OpentronsRequest
+  case class OpentronsInformationRequest(replyTo: ActorRef[OpentronsInformationResponse]) extends OpentronsRequest
 
   sealed trait OpentronsEvent
-  sealed trait OpentronsHWEvent
-  case class OTErrorOccurred(message: String) extends OpentronsEvent with OpentronsHWEvent
-  case class OTExecutedProtocol() extends OpentronsEvent with OpentronsHWEvent
+  case class OTErrorOccurred(message: String) extends OpentronsEvent
+  case class OTExecutedProtocol() extends OpentronsEvent
   case class OTForwardedRequest() extends OpentronsEvent
 
-  case class OTHWStartingProtocol(replyTo: Option[akka.actor.typed.ActorRef[OpentronsReply]]) extends OpentronsHWEvent
+  sealed trait OpentronsReply
+  case class OpentronsInformationResponse(sn: String, uuid: UUID) extends OpentronsReply
+  case class OpentronsCommandStarting(rainbowUpdates: SourceRef[RainbowModifyCommand]) extends OpentronsReply
+  case class OpentronsCommandDone() extends OpentronsReply
+  case class OpentronsCommandFailed() extends OpentronsReply
+  case class OpentronsBusy() extends OpentronsReply
 
+  // Request serializers
+  class OpentronsOrderSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[OpentronsOrder]
+  class OpentronsInformationRequestSerializer(implicit eas: ExtendedActorSystem)
+      extends AvroSerializer[OpentronsInformationRequest]
+
+  // Event serializers
   class OTErrorOccurredAvro extends AvroSerializer[OTErrorOccurred]
   class OTExecutedProtocolAvro extends AvroSerializer[OTExecutedProtocol]
   class OTForwardedRequestAvro extends AvroSerializer[OTForwardedRequest]
 
-  class OTHWStartingProtocolAvro(implicit eas: ExtendedActorSystem) extends AvroSerializer[OTHWStartingProtocol]
-
-  sealed trait OpentronsReply
-  case class OpentronsInformationRequest(replyTo: ActorRef[OpentronsReply]) extends OpentronsRequest
-  case class OpentronsInformationResponse(uuid: String) extends OpentronsReply
-  case class OpentronsCommandDone() extends OpentronsReply
-  case class OpentronsCommandFailed() extends OpentronsReply
-
+  // Response serializers
   class OpentronsInformationResponseSerializer extends AvroSerializer[OpentronsInformationResponse]
+  class OpentronsCommandStartingSerializer(implicit eas: ExtendedActorSystem)
+      extends AvroSerializer[OpentronsCommandStarting]
   class OpentronsCommandDoneSerializer extends AvroSerializer[OpentronsCommandDone]
   class OpentronsCommandFailedSerializer extends AvroSerializer[OpentronsCommandFailed]
-
-  class OpentronsOrderSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[OpentronsOrder]
-  class OpentronsInformationRequestSerializer(implicit eas: ExtendedActorSystem)
-      extends AvroSerializer[OpentronsInformationRequest]
+  class OpentronsBusySerializer extends AvroSerializer[OpentronsBusy]
 }

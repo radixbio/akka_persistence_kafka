@@ -7,14 +7,15 @@ import com.sksamuel.avro4s.{AvroSchema, Decoder, DefaultFieldMapper, Encoder, Fi
 import org.apache.avro.{Schema, SchemaBuilder}
 import org.apache.avro.generic.{GenericData, GenericRecord}
 import org.apache.avro.util.Utf8
-import com.radix.shared.persistence.serializations.squants.schemas._
 
+import com.radix.shared.persistence.serializations.squants.schemas._
 import scala.collection.JavaConverters._
 import java.util
 
 import akka.persistence.SnapshotMetadata
+
 import com.radix.rainbow._
-import com.radix.rainbow.URainbow.{AddSubscriber, CommandMetadata, RainbowCommandAndReverse, RainbowHistoricalResponse, RainbowHistoricalResponseWithParents, RainbowModifyCommand, URainbowEvent, UpdateRainbow, ValidReverse}
+import com.radix.rainbow.URainbow.{AddSubscriber, CommandMetadata, MultiOp, RainbowCommandAndReverse, RainbowHistoricalResponse, RainbowHistoricalResponseWithParents, RainbowModifyCommand, URainbowEvent, UpdateRainbow, ValidReverse}
 import com.radix.rainbow.URainbow.UTypes.{ID, Metadata, RainbowMetaSerialized}
 import com.radix.shared.persistence.AvroSerializer
 import com.radix.utils.rainbowuservice.RainbowActorProtocol
@@ -843,7 +844,8 @@ object Serializers {
   class AddSubscriberPersist(implicit eas: ExtendedActorSystem) extends AvroSerializer[AddSubscriber]
   class URainbowModifyListPersist(implicit eas: ExtendedActorSystem)
       extends AvroSerializer[RainbowActorProtocol.URainbowModifyList] // gen
-  class URainbowSubscribePersist(implicit eas: ExtendedActorSystem) extends AvroSerializer[RainbowActorProtocol.URainbowSubscribe]
+  class URainbowSubscribePersist(implicit eas: ExtendedActorSystem)
+      extends AvroSerializer[RainbowActorProtocol.URainbowSubscribe]
   class RainbowResponsePersist extends AvroSerializer[RainbowActorProtocol.RainbowResponse] // gen
   class RainbowResponseHistoryPersist extends AvroSerializer[RainbowActorProtocol.RainbowHistoryResponse] // ok
   class RainbowResponseHistoryParentsPersist
@@ -851,4 +853,5 @@ object Serializers {
 
   class SerialRainbowSerializer extends AvroSerializer[SerialRainbow[String, LabMeta[Metadata]]] // ok
 
+  class MultiOpSerializer extends AvroSerializer[MultiOp]
 }

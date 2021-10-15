@@ -25,10 +25,10 @@ object requests {
    */
   sealed trait DriverRequest[D]
   case class Core[D](request: CoreDriverRequest) extends DriverRequest[D]
-  case class Local[D](request: D)(implicit val ct: ClassTag[_ <: D]) extends DriverRequest[D]
+  case class Local[D](request: D) extends DriverRequest[D]
 
   implicit def creqToReq[L](creq: CoreDriverRequest): DriverRequest[L] = Core(creq)
-  implicit def lreqToReq[L, R <: L: ClassTag](lreq: R): DriverRequest[L] = Local[L](lreq)(implicitly[ClassTag[R]])
+  implicit def lreqToReq[L](lreq: L): DriverRequest[L] = Local[L](lreq)
 
   case class HealthCheck(replyTo: Option[ActorRef[CoreDriverResponse]]) extends CoreDriverRequest
 

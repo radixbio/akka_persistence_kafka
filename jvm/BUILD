@@ -12,6 +12,7 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/hmrpp:hmrpp-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/hmrpp/uservice:hmrpp-uservice-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/bioutil:bioutil-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/archetypes:archetype-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/common:driver-commons-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/elemental/gateway:elemental-gateway-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/elemental/kafka_bridge:elemental-bridge-serializations",
@@ -35,6 +36,7 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/watlow96_thermal:watlow96_thermal-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/runtime:actor-discovery-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/squants:squants-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/akka:akka-util-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/bioutil/octet:bioutil-octet-circe",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/bunny:bunny-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/healthcheck:healthcheck-serialization",
@@ -52,6 +54,7 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/hmrpp:hmrpp-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/algs/hmrpp/uservice:hmrpp-uservice-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/bioutil:bioutil-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/archetypes:archetype-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/common:driver-commons-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/elemental/gateway:elemental-gateway-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/elemental/kafka_bridge:elemental-bridge-serializations",
@@ -63,6 +66,7 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/ln2:ln2-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/messaging:messaging-driver-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/minifors2:minifors2-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/mock_bioreactor:mock_bioreactor-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/multitrons:multitrons-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/oceanoptics:oceanoptics-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/octet:octet-serializations",
@@ -74,6 +78,7 @@ scala_library(
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/device_drivers/watlow96_thermal:watlow96_thermal-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/runtime:actor-discovery-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/squants:squants-serializations",
+        "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/akka:akka-util-serializations",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/bioutil/octet:bioutil-octet-circe",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/bunny:bunny-serialization",
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence/serializations/utils/healthcheck:healthcheck-serialization",
@@ -122,6 +127,22 @@ scala_test(
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_testkit",
         "@third_party//3rdparty/jvm/org/scalatest",
         "@third_party//3rdparty/jvm/org/scalatest:scalatest_shouldmatchers",
+    ],
+)
+
+scala_test(
+    name = "generic-serialization-test",
+    srcs = [
+        "src/test/scala/GenericSerzTest.scala",
+        "src/test/scala/Test.scala",
+    ],
+    resources = ["src/test/resources/application.conf"],
+    deps = [
+        ":persistence",
+        "//test/jvm:test-lib",
+        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
+        "@third_party//3rdparty/jvm/io/github/embeddedkafka:embedded_kafka_schema_registry",
+        "@third_party//3rdparty/jvm/org/scalatest",
     ],
 )
 

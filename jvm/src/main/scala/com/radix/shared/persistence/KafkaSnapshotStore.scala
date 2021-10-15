@@ -3,6 +3,7 @@ package com.radix.shared.persistence
 import akka.NotUsed
 import akka.actor.ActorRef
 import akka.actor.typed.ActorSystem
+import akka.cluster.ddata.Replicator.{UpdateFailure, UpdateSuccess}
 import akka.kafka.Metadata.{EndOffsets, GetEndOffsets, ListTopics, Topics}
 import akka.kafka.{CommitterSettings, ConsumerSettings, KafkaConsumerActor, ProducerMessage, ProducerSettings, Subscriptions}
 import akka.kafka.scaladsl.{Consumer, Producer}
@@ -27,6 +28,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Success
 
 class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
+
+  override def receivePluginInternal: Receive = {
+    case success: UpdateSuccess[_] => log.debug(s"update success for ${success.key}")
+    case fail: UpdateFailure[_]    => log.error(s"update failed for ${fail.key}")
+    case els                       => super.receivePluginInternal(els)
+  }
+
   private val localConfig = new KafkaConfig(cfg)
 
   val serializationExtension: Serialization = SerializationExtension(context.system)

@@ -4,7 +4,7 @@ import akka.NotUsed
 import akka.actor.typed.ActorSystem
 import akka.actor.{ActorLogging, ActorRef}
 import akka.cluster.ddata.{DistributedData, GCounter, GCounterKey, SelfUniqueAddress}
-import akka.cluster.ddata.Replicator.{Get, GetSuccess, NotFound, ReadLocal, Update, WriteLocal}
+import akka.cluster.ddata.Replicator.{Get, GetSuccess, NotFound, ReadLocal, Update, UpdateFailure, UpdateSuccess, WriteLocal}
 import akka.kafka.Metadata.{EndOffsets, GetEndOffsets}
 
 import scala.collection.immutable
@@ -37,6 +37,12 @@ object KafkaJournal {
 }
 
 class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery with ActorLogging {
+
+  override def receivePluginInternal: Receive = {
+    case success: UpdateSuccess[_] => log.debug(s"update success for ${success.key}")
+    case fail: UpdateFailure[_]    => log.error(s"update failed for ${fail.key}")
+    case els                       => super.receivePluginInternal(els)
+  }
 
   private val localConfig = new KafkaConfig(cfg)
 

@@ -10,6 +10,8 @@ import scala.reflect.ClassTag
 class AvroSerializer[T: SchemaFor: ClassTag: Decoder: Encoder]()(implicit ev: T <:< AnyRef)
     extends SerializerWithStringManifest {
   val Manifest = implicitly[ClassTag[T]].toString
+  val schema: SchemaFor[T] = implicitly
+
   override def fromBinary(bytes: Array[Byte], manifest: String): AnyRef = manifest match {
     case Manifest => {
       val is = AvroInputStream.data[T].from(bytes).build(AvroSchema[T])
@@ -47,3 +49,4 @@ class AvroSerializer[T: SchemaFor: ClassTag: Decoder: Encoder]()(implicit ev: T 
 
   override def identifier: Int = implicitly[ClassTag[T]].toString.hashCode()
 }
+
