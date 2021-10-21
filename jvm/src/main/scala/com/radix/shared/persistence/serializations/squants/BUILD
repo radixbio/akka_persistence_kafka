@@ -8,6 +8,9 @@ scala_library(
         "schemas.scala",
         "units.scala",
     ],
+    resources = [
+        "resources/reference.conf",
+    ],
     exports = [
         "//shared/persistence/jvm/src/main/scala/com/radix/shared/persistence:persistence-lib",
         "@third_party//3rdparty/jvm/org/typelevel:squants",

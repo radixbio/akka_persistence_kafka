@@ -32,7 +32,10 @@ object transactions {
   case object NeedsTips extends LHCaps
 
   sealed trait BioreactorCaps extends Caps
-  case class RPMMinMax(min: Int, max: Int) extends BioreactorCaps
+  case object BioreactorTemperature extends BioreactorCaps
+  case object BioreactorStirrerSpeed extends BioreactorCaps
+  case object BioreactorPH extends BioreactorCaps
+  case object BioreactorO2Level extends BioreactorCaps
 
   case class CapabilitySet(s: Set[Caps])
 
@@ -188,7 +191,7 @@ object transactions {
   class QueryUUIDFailedAvro(implicit eas: ExtendedActorSystem) extends AvroSerializer[QueryUUIDFailed]
   class QueryCapsSuccessfulAvro(implicit eas: ExtendedActorSystem) extends AvroSerializer[QueryCapsSuccessful]
   class QueryCapsFailedAvro(implicit eas: ExtendedActorSystem) extends AvroSerializer[QueryCapsFailed]
-  
+
 
 
 }

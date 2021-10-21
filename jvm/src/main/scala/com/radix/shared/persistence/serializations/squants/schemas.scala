@@ -1,5 +1,6 @@
 package com.radix.shared.persistence.serializations.squants
 
+import com.radix.shared.persistence.AvroSerializer
 import com.radix.shared.persistence.serializations.squants.units._
 import com.sksamuel.avro4s.{Decoder, Encoder, FieldMapper, SchemaFor}
 import org.apache.avro.generic.{GenericData, GenericRecord}
@@ -14,8 +15,8 @@ object schemas {
   implicit object SchemaForTime extends SchemaFor[Time] {
     override def schema: Schema =
       SchemaBuilder
-        .builder("org.typelevel.squants")
-        .record("time")
+        .builder("squants.time")
+        .record("Time")
         .fields()
         .requiredDouble("time")
         .requiredString("unit")
@@ -26,8 +27,8 @@ object schemas {
   implicit object SchemaForTemp extends SchemaFor[Temperature] {
     override def schema: Schema =
       SchemaBuilder
-        .builder("org.typelevel.squants")
-        .record("temperature")
+        .builder("squants.thermal")
+        .record("Temperature")
         .fields()
         .requiredDouble("temperature")
         .requiredString("unit")
@@ -38,8 +39,8 @@ object schemas {
   implicit object SchemaForLength extends SchemaFor[Length] {
     override def schema: Schema =
       SchemaBuilder
-        .builder("org.typelevel.squants")
-        .record("length")
+        .builder("squants.space")
+        .record("Length")
         .fields()
         .requiredDouble("length")
         .requiredString("unit")
@@ -51,8 +52,8 @@ object schemas {
   implicit object SchemaForVolumeFlow extends SchemaFor[VolumeFlow] {
     override def schema: Schema =
       SchemaBuilder
-        .builder("org.typelevel.squants")
-        .record("volumeflow")
+        .builder("osquants.motion")
+        .record("Volumeflow")
         .fields()
         .requiredDouble("volumeflow")
         .requiredString("unit")
@@ -63,8 +64,8 @@ object schemas {
   implicit object SchemaForVolume extends SchemaFor[Volume] {
     override def schema: Schema =
       SchemaBuilder
-        .builder("org.typelevel.squants")
-        .record("volume")
+        .builder("squants.space")
+        .record("Volume")
         .fields()
         .requiredDouble("volume")
         .requiredString("unit")
@@ -76,8 +77,8 @@ object schemas {
   implicit object SchemaForFrequency extends SchemaFor[Frequency] {
     override def schema: Schema =
       SchemaBuilder
-        .builder("org.typelevel.squants")
-        .record("frequency")
+        .builder("squants.time")
+        .record("Frequency")
         .fields()
         .requiredDouble("frequency")
         .requiredString("unit")
@@ -88,8 +89,8 @@ object schemas {
   implicit object SchemaForVelocity extends SchemaFor[Velocity] {
     override def schema: Schema =
       SchemaBuilder
-        .builder("org.typelevel.squants")
-        .record("velocity")
+        .builder("squants.motion")
+        .record("Velocity")
         .fields()
         .requiredDouble("velocity")
         .requiredString("unit")
@@ -272,5 +273,13 @@ object schemas {
 
     override def schemaFor: SchemaFor[Frequency] = SchemaForFrequency
   }
+
+  class TimeAvro extends AvroSerializer[Time]
+  class TemperatureAvro extends AvroSerializer[Temperature]
+  class LengthAvro extends AvroSerializer[Length]
+  class VolumeFlowAvro extends AvroSerializer[VolumeFlow]
+  class VolumeAvro extends AvroSerializer[Volume]
+  class FrequencyAvro extends AvroSerializer[Frequency]
+  class VelocityAvro extends AvroSerializer[Velocity]
 
 }

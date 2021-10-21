@@ -37,6 +37,15 @@ object defns {
     oxygenPercentage: Option[Double]
   ) extends MockBioreactorRequest
 
+  object SetSetpoints {
+    def apply(replyTo: Option[ActorRef[MockBioreactorResponse]],
+              temperature: Option[Temperature] = None,
+              stirrerSpeed: Option[Frequency] = None,
+              pH: Option[Double] = None,
+              oxygenPercentage: Option[Double] = None): SetSetpoints =
+      new SetSetpoints(replyTo, temperature, stirrerSpeed, pH, oxygenPercentage)
+  }
+
   class SetSetpointsSerializer(implicit eas: ExtendedActorSystem) extends AvroSerializer[SetSetpoints]
 
   // Using a case object here made the serializer cranky
