@@ -49,4 +49,3 @@ class AvroSerializer[T: SchemaFor: ClassTag: Decoder: Encoder]()(implicit ev: T 
 
   override def identifier: Int = implicitly[ClassTag[T]].toString.hashCode()
 }
-
