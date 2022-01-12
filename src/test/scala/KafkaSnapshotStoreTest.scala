@@ -5,7 +5,9 @@ import akka.persistence.snapshot.SnapshotStoreSpec
 import com.typesafe.config.ConfigFactory
 import net.manub.embeddedkafka.schemaregistry.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.scalatest.words._
-import org.scalatest.{BeforeAndAfterEach, FlatSpec, FlatSpecLike, Matchers}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.flatspec.{AnyFlatSpec, AnyFlatSpecLike}
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.Await
 import scala.concurrent.duration._

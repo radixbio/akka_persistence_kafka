@@ -11,7 +11,7 @@ import akka.testkit.{TestKit, TestProbe}
 import akka.serialization.SerializationExtension
 import akka.actor.typed.scaladsl.adapter._
 import com.typesafe.config.{Config, ConfigFactory}
-import org.scalatest.WordSpecLike
+import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatest.matchers.should.Matchers
 import scala.util.{Failure, Success}
 
@@ -46,7 +46,7 @@ class TypedActorSerializationSpec
     |akka.actor.serializers.echo-serializer = "com.radix.shared.persistence.test.TypedEchoSerializer"
     |akka.actor.serialization-bindings."com.radix.shared.persistence.test.TypedEchoActor$Echo" = "echo-serializer"
     |""".stripMargin)
-    with WordSpecLike {
+    with AnyWordSpecLike {
   "Typed ActorRefs must (de)serialize correctly" in {
     val serialization = SerializationExtension(system.toClassic)
     val probe = testKit.createTestProbe[NotUsed]()
@@ -80,7 +80,7 @@ object UntypedActorSerializationSpec {
 class UntypedActorSerializationSpec
     extends TestKit(ActorSystem("UntypedActorSerializationSpec", UntypedActorSerializationSpec.config))
     with Matchers
-    with WordSpecLike {
+    with AnyWordSpecLike {
   "Untyped ActorRefs must (de)serialize correctly" in {
     val serialization = SerializationExtension(system)
     val probe = TestProbe()
