@@ -22,7 +22,6 @@ import akka.stream.scaladsl.{Keep, Sink, Source}
 import io.confluent.kafka.serializers.{KafkaAvroDeserializer, KafkaAvroSerializer}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDeserializer, StringSerializer}
-import scalaz.Scalaz._
 import akka.pattern.ask
 import akka.util.Timeout
 import org.apache.avro.generic.GenericRecord
@@ -94,7 +93,7 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
         Future {
           val akkaRecords = atomicWrite.payload.toList
 
-          val kafkaObjectsE = akkaRecords
+          val kafkaObjects: List[Either[Throwable, (String, KafkaJournalKey, Object)]] = akkaRecords
             .map(record => {
               val topic = record.persistenceId + KafkaJournal.journalPostfix
 
@@ -114,7 +113,12 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
                   Right(topic, key, obj)
               }
             })
-            .sequenceU // fail the whole set if serialization fails
+          // a plain scala implementation of .sequenceU from scalaz
+          // fail the whole set if serialization fails
+          val kafkaObjectsE: Either[Throwable, List[(String, KafkaJournalKey, Object)]] = kafkaObjects.find(_.isLeft) match {
+            case Some(left) => Left(left.left.get)
+            case None => Right(kafkaObjects.map(_.right.get))
+          }
 
           val kafkaObjectToProducerRecord: ((String, KafkaJournalKey, Object)) => ProducerRecord[String, Object] = {
             case (topic, key, obj) => {

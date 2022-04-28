@@ -122,7 +122,6 @@ scala_library(
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_stream_kafka",
         "@third_party//3rdparty/jvm/io/confluent:kafka_avro_serializer",
         "@third_party//3rdparty/jvm/org/apache/avro",
-        "@third_party//3rdparty/jvm/org/scalaz:scalaz_core",
     ],
 )
 
