@@ -115,10 +115,11 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
             })
           // a plain scala implementation of .sequenceU from scalaz
           // fail the whole set if serialization fails
-          val kafkaObjectsE: Either[Throwable, List[(String, KafkaJournalKey, Object)]] = kafkaObjects.find(_.isLeft) match {
-            case Some(left) => Left(left.left.get)
-            case None => Right(kafkaObjects.map(_.right.get))
-          }
+          val kafkaObjectsE: Either[Throwable, List[(String, KafkaJournalKey, Object)]] =
+            kafkaObjects.find(_.isLeft) match {
+              case Some(left) => Left(left.left.get)
+              case None       => Right(kafkaObjects.map(_.right.get))
+            }
 
           val kafkaObjectToProducerRecord: ((String, KafkaJournalKey, Object)) => ProducerRecord[String, Object] = {
             case (topic, key, obj) => {
