@@ -207,6 +207,6 @@ scala_binary(
     main_class = "ammonite.Main",
     deps = [
         ":persistence",  # whatever you want to run
-        "@third_party//3rdparty/jvm/com/lihaoyi:ammonite_2_13_3",
+        "@third_party//3rdparty/jvm/com/lihaoyi:ammonite_2_13_8",
     ],
 )
