@@ -173,7 +173,7 @@ scala_binary(
 
 scala_test(
     name = "avro-serialization-test",
-    srcs = ["src/test/scala/SerializationTest.scala"],
+    srcs = ["src/test/scala/ActorSerializationTest.scala"],
     deps = [
         ":persistence-lib",
         "//external:jar/com/typesafe/config",
@@ -199,6 +199,22 @@ scala_test(
         "@third_party//3rdparty/jvm/io/github/embeddedkafka:embedded_kafka_schema_registry",
         "@third_party//3rdparty/jvm/org/scalatest",
     ],
+)
+
+scala_library(
+    name = "serialization-test",
+        srcs = glob(["src/test/scala/SerializationTest.scala"]),
+        visibility = ["//shared/persistence:__subpackages__"],
+        deps = [
+            "//test:test-lib",
+            "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_testkit_typed",
+            "@third_party//3rdparty/jvm/org/scalatest",
+        ],
+        exports = [
+            "//test:test-lib",
+            "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_testkit_typed",
+            "@third_party//3rdparty/jvm/org/scalatest",
+        ],
 )
 
 scala_binary(
