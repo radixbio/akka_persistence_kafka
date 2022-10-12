@@ -183,8 +183,9 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
         .takeWhile(_.record.offset < endOffset - 1, inclusive = true)
         .map(msg => (KafkaJournalKey(msg.record.key), msg))
         .filter { case (key, _) => toSequenceNr >= key.sequenceNr }
-        .map { case (key, msg) =>
-          ProducerMessage.single(new ProducerRecord[String, Object](topic, key.toString, null), msg.committableOffset)
+        .map {
+          case (key, msg) =>
+            ProducerMessage.single(new ProducerRecord[String, Object](topic, key.toString, null), msg.committableOffset)
         }
         .via(Producer.flexiFlow(producerSettings))
         .map(_.passThrough)
@@ -204,7 +205,7 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
 
   override def asyncReadHighestSequenceNr(
     persistenceId: String,
-    fromSequenceNr: Long
+    fromSequenceNr: Long,
   ): scala.concurrent.Future[Long] = {
     val hsnPromise = Promise[Long]()
     val hsnFuture = hsnPromise.future
@@ -250,10 +251,11 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
           _.values.toList.sortBy { case (key, _) => key.sequenceNr }
         }
         .map(
-          _.map { case (key, record) =>
-            Console.println(s"replaying $record")
+          _.map {
+            case (key, record) =>
+              Console.println(s"replaying $record")
 
-            ///// TODO should we uncomment the following to have support for timestamps during replay?
+              ///// TODO should we uncomment the following to have support for timestamps during replay?
 //            record.value match {
 //              case genRecord: GenericRecord =>
 //                val schema = genRecord.getSchema
@@ -268,29 +270,30 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
 //                }
 //              case _ => ()
 //            }
-            val deserializedObjectO = AnySerializedObjectToAvro(
-              serializationExtension,
-              key.serializerId,
-              key.manifest,
-              record.value
-            ) //TODO check if the schema contains a timestamp and do tehe reverse
-            val (obj, isDeleted) = deserializedObjectO match {
-              case None      => (null, true)
-              case Some(obj) => (obj, false)
-            }
-            PersistentRepr(
-              obj,
-              key.sequenceNr,
-              persistenceId,
-              key.manifest,
-              deleted = isDeleted,
-              writerUuid = key.writerUuid.toString
-            )
-          }.foldLeft((0, List.empty[PersistentRepr]))({ case ((counter, accum), perst) =>
-            // don't count deleted messages in the max
-            if (perst.deleted) (counter, accum :+ perst)
-            else if (counter >= max) (counter, accum)
-            else (counter + 1, accum :+ perst)
+              val deserializedObjectO = AnySerializedObjectToAvro(
+                serializationExtension,
+                key.serializerId,
+                key.manifest,
+                record.value,
+              ) //TODO check if the schema contains a timestamp and do tehe reverse
+              val (obj, isDeleted) = deserializedObjectO match {
+                case None      => (null, true)
+                case Some(obj) => (obj, false)
+              }
+              PersistentRepr(
+                obj,
+                key.sequenceNr,
+                persistenceId,
+                key.manifest,
+                deleted = isDeleted,
+                writerUuid = key.writerUuid.toString,
+              )
+          }.foldLeft((0, List.empty[PersistentRepr]))({
+            case ((counter, accum), perst) =>
+              // don't count deleted messages in the max
+              if (perst.deleted) (counter, accum :+ perst)
+              else if (counter >= max) (counter, accum)
+              else (counter + 1, accum :+ perst)
           })._2
             .foreach(recoveryCallback)
         )

@@ -27,7 +27,7 @@ class KafkaSnapshotStoreTest
       EmbeddedKafkaConfig(
         kafkaPort = 9092,
         zooKeeperPort = 2181,
-        schemaRegistryPort = 8081
+        schemaRegistryPort = 8081,
 //        customSchemaRegistryProperties = Map("schema.compatibility.level"-> "full"),
       )
     EmbeddedKafka.start()

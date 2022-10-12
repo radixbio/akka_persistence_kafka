@@ -26,7 +26,7 @@ object KafkaJournalKey {
       record.sequenceNr,
       UUID.fromString(record.writerUuid),
       record.payload.getClass.getName,
-      serializerId
+      serializerId,
     )
   }
 }

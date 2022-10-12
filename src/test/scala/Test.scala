@@ -38,8 +38,9 @@ class SampleActor extends PersistentActor {
   }
   //saveSnapshot(msg ++ "BLAH")*/
 
-  def receiveRecover: PartialFunction[Any, Unit] = { case msg =>
-    log.info(msg.toString)
+  def receiveRecover: PartialFunction[Any, Unit] = {
+    case msg =>
+      log.info(msg.toString)
   }
 }
 

@@ -27,7 +27,7 @@ object AnyAvroToSerializedObject {
           val freader =
             new DataFileReader[GenericRecord](
               new SeekableByteArrayInput(otherSerializer.toBinary(other.asInstanceOf[AnyRef])),
-              reader
+              reader,
             )
           val res = freader.iterator().next()
           assert(!freader.hasNext)

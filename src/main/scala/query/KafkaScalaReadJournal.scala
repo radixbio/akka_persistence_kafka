@@ -66,7 +66,7 @@ class KafkaScalaReadJournal(system: ExtendedActorSystem, cfg: Config)
   override def eventsByPersistenceId(
     persistenceId: String,
     fromSequenceNr: Long,
-    toSequenceNr: Long
+    toSequenceNr: Long,
   ): Source[EventEnvelope, NotUsed] = {
     val topic = persistenceId + KafkaJournal.journalPostfix
 
@@ -97,6 +97,6 @@ class KafkaScalaReadJournal(system: ExtendedActorSystem, cfg: Config)
   override def currentEventsByPersistenceId(
     persistenceId: String,
     fromSequenceNr: Long,
-    toSequenceNr: Long
+    toSequenceNr: Long,
   ): Source[EventEnvelope, NotUsed] = ???
 }

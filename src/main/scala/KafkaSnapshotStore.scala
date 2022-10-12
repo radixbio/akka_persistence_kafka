@@ -78,7 +78,7 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
 
   private def loadSnapshots(
     persistenceId: String,
-    criteria: SnapshotSelectionCriteria
+    criteria: SnapshotSelectionCriteria,
   ): Future[Seq[SelectedSnapshot]] = {
     /* We could infer that a topic with an endOffset of zero is invalid,
      * however that would lead to the topic in question being created, which
@@ -100,11 +100,13 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
             .map(record => (KafkaSnapshotKey(record.key), record))
             .dropWhile { case (key, _) => key.sequenceNr < criteria.minSequenceNr }
             .takeWhile({ case (_, record) => record.offset < endOffset - 1 }, inclusive = true)
-            .filter { case (key, _) =>
-              criteria.minSequenceNr <= key.sequenceNr && key.sequenceNr <= criteria.maxSequenceNr
+            .filter {
+              case (key, _) =>
+                criteria.minSequenceNr <= key.sequenceNr && key.sequenceNr <= criteria.maxSequenceNr
             }
-            .filter { case (key, _) =>
-              criteria.minTimestamp <= key.timestamp && key.timestamp <= criteria.maxTimestamp
+            .filter {
+              case (key, _) =>
+                criteria.minTimestamp <= key.timestamp && key.timestamp <= criteria.maxTimestamp
             }
             .runWith(Sink.seq)
 
@@ -124,9 +126,10 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
             .filter { case (_, record) => record.value != null }
             .sortBy { case (key, _) => key.sequenceNr }
             .sortBy { case (key, _) => key.sequenceNr }
-            .map { case (key, record) =>
-              val metadata = SnapshotMetadata(persistenceId, key.sequenceNr, key.timestamp)
-              SelectedSnapshot(metadata, record.value)
+            .map {
+              case (key, record) =>
+                val metadata = SnapshotMetadata(persistenceId, key.sequenceNr, key.timestamp)
+                SelectedSnapshot(metadata, record.value)
             }
         }
       } else {
@@ -137,7 +140,7 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
 
   override def loadAsync(
     persistenceId: String,
-    criteria: SnapshotSelectionCriteria
+    criteria: SnapshotSelectionCriteria,
   ): Future[Option[SelectedSnapshot]] = {
     for {
       matchingSnapshots <- loadSnapshots(persistenceId, criteria)
@@ -152,8 +155,9 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
     Source
       .single(AnyAvroToSerializedObject(serializationExtension, snapshot))
       .mapAsync(1)(Future.fromTry)
-      .map { case (_, obj) =>
-        new ProducerRecord(metadata.persistenceId + snapshotPostfix, 0, KafkaSnapshotKey(metadata).toString, obj)
+      .map {
+        case (_, obj) =>
+          new ProducerRecord(metadata.persistenceId + snapshotPostfix, 0, KafkaSnapshotKey(metadata).toString, obj)
       }
       .map { pr =>
         ProducerMessage.single(pr, NotUsed)

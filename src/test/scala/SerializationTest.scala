@@ -35,7 +35,9 @@ abstract class SerializationTest extends ScalaTestWithActorTestKit(new RadixSpec
     assertEq(serializeAndDeserialize(original), original)
   }
 
-  def serializeManyAndAssertEqual[T <: AnyRef](originals: Iterable[T])(assertEq: (T, T) => Unit = defaultAssertEq[T] _): Unit = {
+  def serializeManyAndAssertEqual[T <: AnyRef](
+    originals: Iterable[T]
+  )(assertEq: (T, T) => Unit = defaultAssertEq[T] _): Unit = {
     originals.foreach { original =>
       val actual = serializeAndDeserialize(original)
       assertEq(actual, original)
