@@ -207,18 +207,18 @@ scala_test(
 
 scala_library(
     name = "serialization-test",
-        srcs = glob(["src/test/scala/SerializationTest.scala"]),
-        visibility = ["//shared/persistence:__subpackages__"],
-        deps = [
-            "//test:test-lib",
-            "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_testkit_typed",
-            "@third_party//3rdparty/jvm/org/scalatest",
-        ],
-        exports = [
-            "//test:test-lib",
-            "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_testkit_typed",
-            "@third_party//3rdparty/jvm/org/scalatest",
-        ],
+    srcs = glob(["src/test/scala/SerializationTest.scala"]),
+    visibility = ["//shared/persistence:__subpackages__"],
+    exports = [
+        "//test:test-lib",
+        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_testkit_typed",
+        "@third_party//3rdparty/jvm/org/scalatest",
+    ],
+    deps = [
+        "//test:test-lib",
+        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_testkit_typed",
+        "@third_party//3rdparty/jvm/org/scalatest",
+    ],
 )
 
 scala_binary(
