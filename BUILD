@@ -196,6 +196,7 @@ scala_test(
         "src/test/scala/Test.scala",
     ],
     resources = ["src/test/resources/application.conf"],
+    tags = ["exclusive"],
     deps = [
         ":persistence",
         "//test:test-lib",
