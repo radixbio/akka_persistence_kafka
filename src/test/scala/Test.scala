@@ -1,7 +1,7 @@
 package com.radix.shared.persistence.test
 
 import akka.actor.{Actor, ActorIdentity, ActorLogging, ActorPath, ActorSystem, Identify, Props}
-import akka.event.Logging
+import akka.event.{Logging, LoggingAdapter}
 import akka.persistence.PersistentActor
 import com.radix.shared.persistence.AvroSerializer
 
@@ -27,7 +27,7 @@ class IDActor extends Actor with ActorLogging {
 }
 
 class SampleActor extends PersistentActor {
-  val log = Logging(context.system, this)
+  val log: LoggingAdapter = Logging(context.system, this)
   val persistenceId = "blah"
 
   val receiveCommand: Receive = {
@@ -46,8 +46,8 @@ class SampleActor extends PersistentActor {
 
 object Test extends App {
   val system = ActorSystem("radix")
-  val samplerRef = system.actorOf(Props[SampleActor], name = "sampler")
-  val idActorRef = system.actorOf(Props[IDActor], name = "id-actor")
+  val samplerRef = system.actorOf(Props[SampleActor](), name = "sampler")
+  val idActorRef = system.actorOf(Props[IDActor](), name = "id-actor")
   0 to 1 foreach { n =>
     samplerRef ! Foo(n)
     samplerRef ! Bar(n % 2 == 0)
