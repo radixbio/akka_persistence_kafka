@@ -15,9 +15,9 @@ class KafkaJournalTest
     )
     with EmbeddedKafka {
 
-  override def supportsRejectingNonSerializableObjects: CapabilityFlag = CapabilityFlag.on
+  override def supportsRejectingNonSerializableObjects: CapabilityFlag = CapabilityFlag.on()
 
-  override def supportsSerialization: CapabilityFlag = CapabilityFlag.off
+  override def supportsSerialization: CapabilityFlag = CapabilityFlag.off()
 
   override def beforeAll(): Unit = {
     implicit val config: EmbeddedKafkaConfig =

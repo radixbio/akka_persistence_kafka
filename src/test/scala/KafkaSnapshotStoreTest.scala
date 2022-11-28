@@ -20,7 +20,7 @@ class KafkaSnapshotStoreTest
     with EmbeddedKafka
     with Matchers {
 
-  override def supportsSerialization: CapabilityFlag = CapabilityFlag.off
+  override def supportsSerialization: CapabilityFlag = CapabilityFlag.off()
 
   override def beforeAll(): Unit = {
     implicit val config: EmbeddedKafkaConfig =

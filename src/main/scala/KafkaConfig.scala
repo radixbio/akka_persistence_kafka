@@ -2,7 +2,7 @@ package com.radix.shared.persistence
 
 import com.typesafe.config.Config
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class KafkaConfig(cfg: Config) {
   val bootstrapServers = cfg.getString("kafka.bootstrap.servers")

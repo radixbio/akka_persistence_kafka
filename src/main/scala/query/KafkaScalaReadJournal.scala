@@ -20,7 +20,7 @@ import akka.util.Timeout
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.Future
 import scala.util.Success
 
@@ -88,7 +88,7 @@ class KafkaScalaReadJournal(system: ExtendedActorSystem, cfg: Config)
         case (key, record) => {
           val deserializedObjectO =
             AnySerializedObjectToAvro(serializationExtension, key.serializerId, key.manifest, record.value)
-          EventEnvelope(NoOffset, persistenceId, key.sequenceNr, deserializedObjectO)
+          EventEnvelope(NoOffset, persistenceId, key.sequenceNr, deserializedObjectO, System.currentTimeMillis())
         }
       }
       .mapMaterializedValue(_ => NotUsed)

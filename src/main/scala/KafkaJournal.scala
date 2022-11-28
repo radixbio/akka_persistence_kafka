@@ -117,8 +117,20 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
           // fail the whole set if serialization fails
           val kafkaObjectsE: Either[Throwable, List[(String, KafkaJournalKey, Object)]] =
             kafkaObjects.find(_.isLeft) match {
-              case Some(left) => Left(left.left.get)
-              case None       => Right(kafkaObjects.map(_.right.get))
+              case Some(left) =>
+                Left(
+                  left.swap.getOrElse(
+                    throw new IllegalStateException("this error should never be reached")
+                  )
+                )
+              case None =>
+                Right(
+                  kafkaObjects.map(
+                    _.getOrElse(
+                      throw new IllegalStateException("this error should never be reached")
+                    )
+                  )
+                )
             }
 
           val kafkaObjectToProducerRecord: ((String, KafkaJournalKey, Object)) => ProducerRecord[String, Object] = {
@@ -164,7 +176,7 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
               currentHsn :+ (highestSeqNr - currentHsn.value).toLong
           }
 
-          (aw, Success())
+          (aw, Success(()))
       })
       .mergeSubstreams
       .runWith(Sink.seq)
@@ -191,7 +203,7 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
         .map(_.passThrough)
         .toMat(Committer.sink(committerSettings))(Keep.both)
         .mapMaterializedValue(DrainingControl.apply)
-        .run
+        .run()
         .streamCompletion
         .map { _ =>
           ()
@@ -245,8 +257,9 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
         /* In the event two records have the same sequence Id,
          * prefer the one with the largest offset.
          */
-        .map(_.groupBy { case (key, _) => key.sequenceNr }
-          .mapValues(_.maxBy { case (_, record) => record.offset }))
+        .map(_.groupBy { case (key, _) => key.sequenceNr }.view.mapValues(_.maxBy {
+          case (_, record) => record.offset
+        }))
         .map {
           _.values.toList.sortBy { case (key, _) => key.sequenceNr }
         }

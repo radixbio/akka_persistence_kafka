@@ -116,6 +116,7 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
              * prefer the one with the largest offset.
              */
             .groupBy { case (key, _) => key.sequenceNr }
+            .view
             .mapValues(_.maxBy { case (_, record) => record.offset })
             .values
             .toList
@@ -183,7 +184,7 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
 
     requestedSnapshot
       .flatMap {
-        case None => Future.successful() // Already deleted, so stop here.
+        case None => Future.successful(()) // Already deleted, so stop here.
         case Some(snapshot) =>
           val seqNrToDelete = snapshot.metadata.sequenceNr
           val timestampToDelete = snapshot.metadata.timestamp

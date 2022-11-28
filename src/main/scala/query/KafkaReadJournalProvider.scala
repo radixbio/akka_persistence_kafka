@@ -7,5 +7,5 @@ import akka.persistence.query.ReadJournalProvider
 class KafkaReadJournalProvider(system: ExtendedActorSystem, config: Config) extends ReadJournalProvider {
   override def scaladslReadJournal(): KafkaScalaReadJournal = new KafkaScalaReadJournal(system, config)
 
-  override def javadslReadJournal(): KafkaJavaReadJournal = new KafkaJavaReadJournal(scaladslReadJournal)
+  override def javadslReadJournal(): KafkaJavaReadJournal = new KafkaJavaReadJournal(scaladslReadJournal())
 }
