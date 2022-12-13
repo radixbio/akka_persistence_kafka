@@ -18,7 +18,7 @@ import akka.persistence.{AtomicWrite, PersistentRepr}
 import akka.persistence.journal.{AsyncRecovery, AsyncWriteJournal}
 import akka.serialization.{Serialization, SerializationExtension}
 import akka.stream.Materializer
-import akka.stream.scaladsl.{Keep, Sink, Source}
+import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
 import io.confluent.kafka.serializers.{KafkaAvroDeserializer, KafkaAvroSerializer}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDeserializer, StringSerializer}

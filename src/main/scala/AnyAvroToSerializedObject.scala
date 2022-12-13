@@ -23,15 +23,11 @@ object AnyAvroToSerializedObject {
       case other =>
         Try {
           val otherSerializer = ser.findSerializerFor(other.asInstanceOf[AnyRef])
-          val reader: DatumReader[GenericRecord] = new GenericDatumReader[GenericRecord]()
-          val freader =
-            new DataFileReader[GenericRecord](
-              new SeekableByteArrayInput(otherSerializer.toBinary(other.asInstanceOf[AnyRef])),
-              reader,
-            )
-          val res = freader.iterator().next()
-          assert(!freader.hasNext)
-          (Some(otherSerializer.identifier), res.asInstanceOf[Object])
+          // this cast should be safe, as we shouldn't have any persistent messages stored that are not
+          // written by us
+          val avroSerializer = otherSerializer.asInstanceOf[AvroSerializer[Any]]
+          val res = avroSerializer.encoder.encode(other)
+          (Some(otherSerializer.identifier), res)
           /* Do not try to hide the fact that serialization failed. This should fail noisily.
            * .recover { case exn: Exception => otherSerializer.toBinary(other.asInstanceOf[AnyRef]) }
            */
