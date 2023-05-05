@@ -16,7 +16,7 @@ object ServiceKeySerializer {
   }
   implicit def EncoderForTypedServiceKey[T](implicit A: ExtendedActorSystem): Encoder[ServiceKey[T]] =
     new Encoder[ServiceKey[T]] {
-      val ser = SerializationExtension(A)
+      lazy val ser = SerializationExtension.get(A)
       override def encode(t: ServiceKey[T]): AnyRef = {
         implicitly[Encoder[String]].encode(ser.findSerializerFor(t).toBinary(t).mkString)
       }
@@ -39,7 +39,7 @@ object ServiceKeySerializer {
     }
   implicit def EncoderForAnyServiceKey(implicit A: ExtendedActorSystem): Encoder[ServiceKey[_]] =
     new Encoder[ServiceKey[_]] {
-      val ser = SerializationExtension(A)
+      lazy val ser = SerializationExtension.get(A)
       override def encode(t: ServiceKey[_]): AnyRef = {
         implicitly[Encoder[String]].encode(ser.findSerializerFor(t).toBinary(t).mkString)
       }

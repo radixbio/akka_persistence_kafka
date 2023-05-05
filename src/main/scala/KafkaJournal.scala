@@ -45,7 +45,7 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
 
   private val localConfig = new KafkaConfig(cfg)
 
-  val serializationExtension: Serialization = SerializationExtension(context.system)
+  lazy val serializationExtension: Serialization = SerializationExtension.get(context.system)
   implicit val mat: Materializer = Materializer(context.system)
   implicit val timeout: Timeout = Timeout(5.seconds)
 

@@ -37,7 +37,7 @@ class KafkaSnapshotStore(cfg: Config) extends SnapshotStore {
 
   private val localConfig = new KafkaConfig(cfg)
 
-  val serializationExtension: Serialization = SerializationExtension(context.system)
+  lazy val serializationExtension: Serialization = SerializationExtension.get(context.system)
   implicit val mat: Materializer = Materializer(context.system)
   implicit val timeout: Timeout = Timeout(5.seconds)
 
