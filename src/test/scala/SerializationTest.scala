@@ -1,12 +1,16 @@
 package com.radix.shared.persistence.test
 
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
+import akka.actor.typed.ActorRef
+import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.scaladsl.adapter._
 import akka.serialization.SerializationExtension
+import akka.testkit.TestKit
 import com.radix.shared.persistence.AvroSerializer
 import com.radix.test.RadixSpecConfig
 import org.scalatest.wordspec.AnyWordSpecLike
 
+import java.util.UUID
 import scala.util.{Failure, Success}
 
 abstract class SerializationTest extends ScalaTestWithActorTestKit(new RadixSpecConfig().config) with AnyWordSpecLike {
@@ -47,4 +51,6 @@ abstract class SerializationTest extends ScalaTestWithActorTestKit(new RadixSpec
   private def defaultAssertEq[T](actual: T, expected: T): Unit = {
     actual should ===(expected)
   }
+
+  def dummyActor: ActorRef[Any] = this.system.systemActorOf(Behaviors.ignore[Any], UUID.randomUUID.toString)
 }
