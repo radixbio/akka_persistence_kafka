@@ -4,7 +4,7 @@ import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.scaladsl.adapter._
-import akka.serialization.SerializationExtension
+import akka.serialization.{SerializationExtension, SerializerWithStringManifest}
 import akka.testkit.TestKit
 import com.radix.shared.persistence.AvroSerializer
 import com.radix.test.RadixSpecConfig
@@ -17,11 +17,11 @@ abstract class SerializationTest extends ScalaTestWithActorTestKit(new RadixSpec
   def serializeAndDeserialize[T <: AnyRef](original: T): T = {
     val serialization = SerializationExtension(system.toClassic)
     serialization.findSerializerFor(original) match {
-      case avro: AvroSerializer[_] =>
+      case serz: SerializerWithStringManifest =>
         serialization.serialize(original) match {
           case Success(serializedObject) =>
-            val identifier = avro.identifier
-            val manifest = avro.manifest(original)
+            val identifier = serz.identifier
+            val manifest = serz.manifest(original)
             serialization.deserialize(serializedObject, identifier, manifest) match {
               case Success(deserialized) =>
                 deserialized.getClass should ===(original.getClass)
@@ -32,6 +32,8 @@ abstract class SerializationTest extends ScalaTestWithActorTestKit(new RadixSpec
           case Failure(exception) =>
             fail(s"failed to serialize: $exception")
         }
+      case other =>
+        fail(s"unexpected serializer: $other")
     }
   }
 

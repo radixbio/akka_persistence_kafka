@@ -7,6 +7,9 @@ import com.sksamuel.avro4s.{AvroInputStream, AvroOutputStream, AvroSchema, Decod
 
 import scala.reflect.ClassTag
 
+/**
+ * @note Do not rename this class, as its name is hard-referenced by AutoSerz
+ */
 class AvroSerializer[T: SchemaFor: ClassTag: Decoder: Encoder]()(implicit ev: T <:< AnyRef)
     extends SerializerWithStringManifest {
   val Manifest = implicitly[ClassTag[T]].toString

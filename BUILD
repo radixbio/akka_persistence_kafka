@@ -113,6 +113,7 @@ scala_library(
     srcs = glob(["src/main/scala/*.scala"]),
     visibility = ["//shared/persistence:__subpackages__"],
     exports = [
+        ":autoserz-lib",
         "@third_party//3rdparty/jvm/com/sksamuel/avro4s:avro4s_core",
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor",
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
@@ -123,6 +124,7 @@ scala_library(
         "@third_party//3rdparty/jvm/io/confluent:kafka_avro_serializer",
     ],
     deps = [
+        ":autoserz-lib",
         "@third_party//3rdparty/jvm/com/sksamuel/avro4s:avro4s_core",
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor",
         "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
@@ -234,4 +236,31 @@ scala_binary(
         ":persistence",  # whatever you want to run
         "@third_party//3rdparty/jvm/com/lihaoyi:ammonite_2_13_8",
     ],
+)
+
+scala_binary(
+    name = "auto-serializers",
+    srcs = glob(["src/main/scala/autoserz/*.scala"]),
+    main_class = "com.radix.shared.persistence.autoserz.AutoSerializers",
+    visibility = ["//shared/persistence:__subpackages__"],
+    deps = [
+        "//shared/persistence:persistence-lib",
+        "@third_party//3rdparty/jvm/org/scalameta",
+    ],
+)
+
+scala_binary(
+    name = "auto-serializer-bindings",
+    srcs = glob(["src/main/scala/autoserz/*.scala"]),
+    main_class = "com.radix.shared.persistence.autoserz.AutoBindings",
+    visibility = ["//shared/persistence:__subpackages__"],
+    deps = [
+        "//shared/persistence:persistence-lib",
+        "@third_party//3rdparty/jvm/org/scalameta",
+    ],
+)
+
+scala_library(
+    name = "autoserz-lib",
+    srcs = ["src/main/scala/autoserz/AutoSerz.scala"],
 )
