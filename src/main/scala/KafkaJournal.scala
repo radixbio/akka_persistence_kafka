@@ -202,7 +202,7 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
         .via(Producer.flexiFlow(producerSettings))
         .map(_.passThrough)
         .toMat(Committer.sink(committerSettings))(Keep.both)
-        .mapMaterializedValue(DrainingControl.apply)
+        .mapMaterializedValue(DrainingControl.apply.tupled)
         .run()
         .streamCompletion
         .map { _ =>

@@ -3,7 +3,7 @@ package com.radix.shared.persistence.test
 import akka.persistence.CapabilityFlag
 import akka.persistence.snapshot.SnapshotStoreSpec
 import com.typesafe.config.ConfigFactory
-import net.manub.embeddedkafka.schemaregistry.{EmbeddedKafka, EmbeddedKafkaConfig}
+import io.github.embeddedkafka.schemaregistry.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.scalatest.words._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.{AnyFlatSpec, AnyFlatSpecLike}
@@ -25,9 +25,6 @@ class KafkaSnapshotStoreTest
   override def beforeAll(): Unit = {
     implicit val config: EmbeddedKafkaConfig =
       EmbeddedKafkaConfig(
-        kafkaPort = 9092,
-        zooKeeperPort = 2181,
-        schemaRegistryPort = 8081,
 //        customSchemaRegistryProperties = Map("schema.compatibility.level"-> "full"),
       )
     EmbeddedKafka.start()

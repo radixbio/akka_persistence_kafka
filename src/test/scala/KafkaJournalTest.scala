@@ -3,8 +3,7 @@ package com.radix.shared.persistence.test
 import akka.persistence.CapabilityFlag
 import akka.persistence.journal.JournalSpec
 import com.typesafe.config.{Config, ConfigFactory}
-import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel
-import net.manub.embeddedkafka.schemaregistry.{EmbeddedKafka, EmbeddedKafkaConfig}
+import io.github.embeddedkafka.schemaregistry.{EmbeddedKafka, EmbeddedKafkaConfig}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -22,10 +21,7 @@ class KafkaJournalTest
   override def beforeAll(): Unit = {
     implicit val config: EmbeddedKafkaConfig =
       EmbeddedKafkaConfig(
-        kafkaPort = 9092,
-        zooKeeperPort = 2181,
-        schemaRegistryPort = 8081,
-        customSchemaRegistryProperties = Map("schema.compatibility.level" -> "full"),
+        customSchemaRegistryProperties = Map("schema.compatibility.level" -> "full")
       )
     EmbeddedKafka.start()
 

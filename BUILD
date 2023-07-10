@@ -1,6 +1,5 @@
 scala_library(
     name = "persistence",
-    resources = ["src/main/resources/reference.conf"],
     visibility = ["//visibility:public"],
     exports = [
         ":persistence-lib",
@@ -111,6 +110,7 @@ scala_library(
 scala_library(
     name = "persistence-lib",
     srcs = glob(["src/main/scala/*.scala"]),
+    resources = ["src/main/resources/reference.conf"],
     visibility = ["//shared/persistence:__subpackages__"],
     exports = [
         ":autoserz-lib",
