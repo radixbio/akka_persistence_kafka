@@ -92,9 +92,8 @@ object AutoSerializers {
   case class ImportStatement(pkg: String, objects: Set[String]) {
     def render: String = {
       objects match {
-        case set if set.isEmpty      => s"import $pkg._"
-        case set if set.tail.isEmpty => s"import $pkg.${objects.head}"
-        case _                       => s"import $pkg.{${objects.mkString(", ")}}"
+        case set if set.isEmpty => s"import $pkg._"
+        case _                  => s"import $pkg.{${objects.mkString(", ")}}"
       }
     }
   }
@@ -221,6 +220,7 @@ object AutoSerializers {
       .collect {
         case cls: Defn.Class if !cls.hasMod(mod"abstract") => cls
         case trt: Defn.Trait if trt.hasMod(mod"sealed")    => trt
+        case obj: Defn.Object if obj.hasMod(mod"case")     => obj
       }
       .flatMap { defn =>
         defn.mods
@@ -292,9 +292,12 @@ object AutoSerializers {
   }
 
   def renderSerializer(classToSerialize: Member, annotation: AutoSerz, source: Source): String = {
-    val serializedName = classToSerialize.name.value
     val serializedLocalPath = findLocalPath(classToSerialize, source).map(_.path).mkString(".")
-    val serializedFullName = s"$serializedLocalPath.${classToSerialize.name.value}"
+    val serializedName = s"$serializedLocalPath${classToSerialize.name.value}".replace(".", "")
+    val serializedFullName = classToSerialize match {
+      case _: Defn.Object => s"$serializedLocalPath.${classToSerialize.name.value}.type"
+      case _              => s"$serializedLocalPath.${classToSerialize.name.value}"
+    }
 
     val eas = if (annotation.params.contains(ExtendedActorSystem)) {
       "(implicit eas: ExtendedActorSystem)"

@@ -242,7 +242,7 @@ scala_binary(
     name = "auto-serializers",
     srcs = glob(["src/main/scala/autoserz/*.scala"]),
     main_class = "com.radix.shared.persistence.autoserz.AutoSerializers",
-    visibility = ["//shared/persistence:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//shared/persistence:persistence-lib",
         "@third_party//3rdparty/jvm/org/scalameta",
@@ -253,7 +253,7 @@ scala_binary(
     name = "auto-serializer-bindings",
     srcs = glob(["src/main/scala/autoserz/*.scala"]),
     main_class = "com.radix.shared.persistence.autoserz.AutoBindings",
-    visibility = ["//shared/persistence:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//shared/persistence:persistence-lib",
         "@third_party//3rdparty/jvm/org/scalameta",
