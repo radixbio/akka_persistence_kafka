@@ -114,26 +114,43 @@ scala_library(
     visibility = ["//shared/persistence:__subpackages__"],
     exports = [
         ":autoserz-lib",
-        "@third_party//3rdparty/jvm/com/sksamuel/avro4s:avro4s_core",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_distributed_data",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_persistence",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_stream",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_stream_kafka",
-        "@third_party//3rdparty/jvm/io/confluent:kafka_avro_serializer",
+        "@maven//:com_chuusai_shapeless_2_13",
+        "@maven//:com_propensive_magnolia_2_13",
+        "@maven//:com_propensive_mercator_2_13",
+        "@maven//:com_sksamuel_avro4s_avro4s_core_2_13",
+        "@maven//:com_typesafe_akka_akka_actor_2_13",
+        "@maven//:com_typesafe_akka_akka_actor_typed_2_13",
+        "@maven//:com_typesafe_akka_akka_distributed_data_2_13",
+        "@maven//:com_typesafe_akka_akka_persistence_2_13",
+        "@maven//:com_typesafe_akka_akka_stream_2_13",
+        "@maven//:com_typesafe_akka_akka_stream_kafka_2_13",
+        "@maven//:com_typesafe_config",
+        "@maven//:io_confluent_kafka_avro_serializer",
+        "@maven//:io_confluent_kafka_schema_registry_client",
+        "@maven//:io_confluent_kafka_schema_serializer",
+        "@maven//:org_apache_avro_avro",
+        "@maven//:org_apache_kafka_kafka_clients",
+        "@maven//:org_apache_kafka_kafka_server_common",
     ],
     deps = [
         ":autoserz-lib",
-        "@third_party//3rdparty/jvm/com/sksamuel/avro4s:avro4s_core",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_distributed_data",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_persistence",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_stream",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_stream_kafka",
-        "@third_party//3rdparty/jvm/io/confluent:kafka_avro_serializer",
-        "@third_party//3rdparty/jvm/org/apache/avro",
+        "@maven//:com_chuusai_shapeless_2_13",
+        "@maven//:com_propensive_magnolia_2_13",
+        "@maven//:com_propensive_mercator_2_13",
+        "@maven//:com_sksamuel_avro4s_avro4s_core_2_13",
+        "@maven//:com_typesafe_akka_akka_actor_2_13",
+        "@maven//:com_typesafe_akka_akka_actor_typed_2_13",
+        "@maven//:com_typesafe_akka_akka_distributed_data_2_13",
+        "@maven//:com_typesafe_akka_akka_persistence_2_13",
+        "@maven//:com_typesafe_akka_akka_stream_2_13",
+        "@maven//:com_typesafe_akka_akka_stream_kafka_2_13",
+        "@maven//:com_typesafe_config",
+        "@maven//:io_confluent_kafka_avro_serializer",
+        "@maven//:io_confluent_kafka_schema_registry_client",
+        "@maven//:io_confluent_kafka_schema_serializer",
+        "@maven//:org_apache_avro_avro",
+        "@maven//:org_apache_kafka_kafka_clients",
+        "@maven//:org_apache_kafka_kafka_server_common",
     ],
 )
 
@@ -143,14 +160,14 @@ scala_library(
     visibility = ["//shared/persistence:__subpackages__"],
     exports = [
         ":persistence-lib",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_persistence_query",
+        "@maven//:com_typesafe_akka_akka_persistence_query_2_13",
     ],
     deps = [
         ":persistence-lib",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_persistence_query",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_stream_kafka",
-        "@third_party//3rdparty/jvm/io/confluent:kafka_avro_serializer",
+        "@maven//:com_typesafe_akka_akka_actor_2_13",
+        "@maven//:com_typesafe_akka_akka_persistence_query_2_13",
+        "@maven//:com_typesafe_akka_akka_stream_kafka_2_13",
+        "@maven//:io_confluent_kafka_avro_serializer",
     ],
 )
 
@@ -164,9 +181,16 @@ scala_test(
     resources = ["src/test/resources/application.conf"],
     deps = [
         ":persistence-lib",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_cluster_typed",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_persistence_tck",
-        "@third_party//3rdparty/jvm/io/github/embeddedkafka:embedded_kafka_schema_registry",
+        "@maven//:com_typesafe_akka_akka_cluster_typed_2_13",
+        "@maven//:com_typesafe_akka_akka_persistence_tck_2_13",
+        "@maven//:com_typesafe_akka_akka_testkit_2_13",
+        "@maven//:io_confluent_kafka_schema_registry",
+        "@maven//:io_confluent_rest_utils",
+        "@maven//:io_github_embeddedkafka_embedded_kafka_2_13",
+        "@maven//:io_github_embeddedkafka_embedded_kafka_schema_registry_2_13",
+        "@maven//:org_apache_kafka_kafka_2_13",
+        "@maven//:org_apache_zookeeper_zookeeper",
+        "@maven//:org_scalatest_scalatest_2_13",
     ],
 )
 
@@ -177,7 +201,7 @@ scala_binary(
     resources = ["src/test/resources/application.conf"],
     deps = [
         ":persistence",
-        "@third_party//3rdparty/jvm/com/propensive:magnolia",
+        "@maven//:io_confluent_kafka_schema_registry",
     ],
 )
 
@@ -186,13 +210,13 @@ scala_test(
     srcs = ["src/test/scala/ActorSerializationTest.scala"],
     deps = [
         ":persistence-lib",
-        "//external:jar/com/typesafe/config",
-        "@third_party//3rdparty/jvm/com/sksamuel/avro4s:avro4s_core",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_testkit_typed",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_cluster_typed",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_testkit",
-        "@third_party//3rdparty/jvm/org/scalatest",
-        "@third_party//3rdparty/jvm/org/scalatest:scalatest_shouldmatchers",
+        "@maven//:com_sksamuel_avro4s_avro4s_core_2_13",
+        "@maven//:com_typesafe_akka_akka_actor_testkit_typed_2_13",
+        "@maven//:com_typesafe_akka_akka_cluster_typed_2_13",
+        "@maven//:com_typesafe_akka_akka_testkit_2_13",
+        "@maven//:com_typesafe_config",
+        "@maven//:org_scalatest_scalatest_2_13",
+        "@maven//:org_scalatest_scalatest_shouldmatchers_2_13",
     ],
 )
 
@@ -206,9 +230,9 @@ scala_test(
     deps = [
         ":persistence",
         "//test:test-lib",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
-        "@third_party//3rdparty/jvm/io/github/embeddedkafka:embedded_kafka_schema_registry",
-        "@third_party//3rdparty/jvm/org/scalatest",
+        "@maven//:com_typesafe_akka_akka_actor_typed_2_13",
+        "@maven//:io_github_embeddedkafka_embedded_kafka_schema_registry_2_13",
+        "@maven//:org_scalatest_scalatest_2_13",
     ],
 )
 
@@ -218,13 +242,15 @@ scala_library(
     visibility = ["//shared/persistence:__subpackages__"],
     exports = [
         "//test:test-lib",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_testkit_typed",
-        "@third_party//3rdparty/jvm/org/scalatest",
+        "@maven//:com_typesafe_akka_akka_actor_testkit_typed_2_13",
+        "@maven//:com_typesafe_akka_akka_testkit_2_13",
+        "@maven//:org_scalatest_scalatest_2_13",
     ],
     deps = [
         "//test:test-lib",
-        "@third_party//3rdparty/jvm/com/typesafe/akka:akka_actor_testkit_typed",
-        "@third_party//3rdparty/jvm/org/scalatest",
+        "@maven//:com_typesafe_akka_akka_actor_testkit_typed_2_13",
+        "@maven//:com_typesafe_akka_akka_testkit_2_13",
+        "@maven//:org_scalatest_scalatest_2_13",
     ],
 )
 
@@ -234,7 +260,7 @@ scala_binary(
     main_class = "ammonite.Main",
     deps = [
         ":persistence",  # whatever you want to run
-        "@third_party//3rdparty/jvm/com/lihaoyi:ammonite_2_13_8",
+        "@maven//:com_lihaoyi_ammonite_2_13_8",
     ],
 )
 
@@ -245,7 +271,12 @@ scala_binary(
     visibility = ["//visibility:public"],
     deps = [
         "//shared/persistence:persistence-lib",
-        "@third_party//3rdparty/jvm/org/scalameta",
+        "@maven//:com_lihaoyi_sourcecode_2_13",
+        "@maven//:org_scalameta_common_2_13",
+        "@maven//:org_scalameta_fastparse_v2_2_13",
+        "@maven//:org_scalameta_parsers_2_13",
+        "@maven//:org_scalameta_scalameta_2_13",
+        "@maven//:org_scalameta_trees_2_13",
     ],
 )
 
@@ -256,7 +287,12 @@ scala_binary(
     visibility = ["//visibility:public"],
     deps = [
         "//shared/persistence:persistence-lib",
-        "@third_party//3rdparty/jvm/org/scalameta",
+        "@maven//:com_lihaoyi_sourcecode_2_13",
+        "@maven//:org_scalameta_common_2_13",
+        "@maven//:org_scalameta_fastparse_v2_2_13",
+        "@maven//:org_scalameta_parsers_2_13",
+        "@maven//:org_scalameta_scalameta_2_13",
+        "@maven//:org_scalameta_trees_2_13",
     ],
 )
 
