@@ -140,6 +140,7 @@ scala_library(
 scala_binary(
     name = "auto-serializers",
     srcs = glob(["src/main/scala/autoserz/*.scala"]),
+    format = False,
     main_class = "com.radix.shared.persistence.autoserz.AutoSerializers",
     visibility = ["//visibility:public"],
     deps = [
@@ -156,6 +157,7 @@ scala_binary(
 scala_binary(
     name = "auto-serializer-bindings",
     srcs = glob(["src/main/scala/autoserz/*.scala"]),
+    format = False,
     main_class = "com.radix.shared.persistence.autoserz.AutoBindings",
     visibility = ["//visibility:public"],
     deps = [
@@ -172,4 +174,5 @@ scala_binary(
 scala_library(
     name = "autoserz-lib",
     srcs = ["src/main/scala/autoserz/AutoSerz.scala"],
+    format = False,
 )
