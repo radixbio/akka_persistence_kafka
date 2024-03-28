@@ -135,7 +135,7 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
 
           val kafkaObjectToProducerRecord: ((String, KafkaJournalKey, Object)) => ProducerRecord[String, Object] = {
             case (topic, key, obj) => {
-              //uncomment to autostore timestamp from the messages. Might be useful for prismuservice in the future?
+              // uncomment to autostore timestamp from the messages. Might be useful for prismuservice in the future?
 //                      val genRecord = obj.asInstanceOf[GenericRecord]
 //                      val schema = genRecord.getSchema
 //                      val hasTimestamp = schema.getFields.contains("timestamp") //Assume this is a some or none
@@ -288,7 +288,7 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
                 key.serializerId,
                 key.manifest,
                 record.value,
-              ) //TODO check if the schema contains a timestamp and do tehe reverse
+              ) // TODO check if the schema contains a timestamp and do tehe reverse
               val (obj, isDeleted) = deserializedObjectO match {
                 case None      => (null, true)
                 case Some(obj) => (obj, false)
@@ -301,13 +301,13 @@ class KafkaJournal(cfg: Config) extends AsyncWriteJournal with AsyncRecovery wit
                 deleted = isDeleted,
                 writerUuid = key.writerUuid.toString,
               )
-          }.foldLeft((0, List.empty[PersistentRepr]))({
+          }.foldLeft((0, List.empty[PersistentRepr])) {
             case ((counter, accum), perst) =>
               // don't count deleted messages in the max
               if (perst.deleted) (counter, accum :+ perst)
               else if (counter >= max) (counter, accum)
               else (counter + 1, accum :+ perst)
-          })._2
+          }._2
             .foreach(recoveryCallback)
         )
     } yield result

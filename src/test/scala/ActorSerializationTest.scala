@@ -1,7 +1,7 @@
 package com.radix.shared.persistence.test
 
 import akka.NotUsed
-import akka.actor.{ActorSystem, ExtendedActorSystem, ActorRef => UActorRef}
+import akka.actor.{ActorRef => UActorRef, ActorSystem, ExtendedActorSystem}
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import com.radix.shared.persistence.AvroSerializer

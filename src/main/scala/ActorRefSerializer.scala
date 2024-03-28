@@ -3,7 +3,7 @@ package com.radix.shared.persistence
 import com.sksamuel.avro4s.{Decoder, Encoder, FieldMapper, SchemaFor}
 import akka.actor.typed.ActorRef
 import org.apache.avro.{Schema, SchemaBuilder}
-import akka.actor.{ExtendedActorSystem, ActorRef => UActorRef}
+import akka.actor.{ActorRef => UActorRef, ExtendedActorSystem}
 import akka.actor.typed.scaladsl.adapter._
 import akka.serialization.Serialization
 import akka.stream.{SinkRef, SourceRef, StreamRefResolver}

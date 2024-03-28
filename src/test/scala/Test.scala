@@ -36,7 +36,7 @@ class SampleActor extends PersistentActor {
     case msg: Bar =>
       persist(msg) { _ => }
   }
-  //saveSnapshot(msg ++ "BLAH")*/
+  // saveSnapshot(msg ++ "BLAH")*/
 
   def receiveRecover: PartialFunction[Any, Unit] = {
     case msg =>
@@ -52,5 +52,5 @@ object Test extends App {
     samplerRef ! Foo(n)
     samplerRef ! Bar(n % 2 == 0)
   }
-  //idActorRef ! "start"
+  // idActorRef ! "start"
 }

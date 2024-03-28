@@ -14,7 +14,7 @@ object AnyAvroToSerializedObject {
       case str: String      => Success(None, str)
       case int: Int         => Success(None, int.asInstanceOf[Object])
       case integer: Integer => Success(None, integer.asInstanceOf[Object])
-      //case barray: Array[Int] => // serialization as byte array preferred over primitive
+      // case barray: Array[Int] => // serialization as byte array preferred over primitive
       case long: Long        => Success(None, long.asInstanceOf[Object])
       case double: Double    => Success(None, double.asInstanceOf[Object])
       case float: Float      => Success(None, float.asInstanceOf[Object])
