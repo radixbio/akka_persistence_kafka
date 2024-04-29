@@ -141,6 +141,10 @@ scala_binary(
     name = "auto-serializers",
     srcs = glob(["src/main/scala/autoserz/*.scala"]),
     format = False,
+    jvm_flags = [
+        "-XX:-CreateCoredumpOnCrash",
+        "-XX:-UsePerfData",
+    ],
     main_class = "com.radix.shared.persistence.autoserz.AutoSerializers",
     visibility = ["//visibility:public"],
     deps = [
@@ -158,6 +162,10 @@ scala_binary(
     name = "auto-serializer-bindings",
     srcs = glob(["src/main/scala/autoserz/*.scala"]),
     format = False,
+    jvm_flags = [
+        "-XX:-CreateCoredumpOnCrash",
+        "-XX:-UsePerfData",
+    ],
     main_class = "com.radix.shared.persistence.autoserz.AutoBindings",
     visibility = ["//visibility:public"],
     deps = [
