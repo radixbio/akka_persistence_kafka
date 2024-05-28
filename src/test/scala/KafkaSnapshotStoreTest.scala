@@ -4,7 +4,6 @@ import akka.persistence.CapabilityFlag
 import akka.persistence.snapshot.SnapshotStoreSpec
 import com.typesafe.config.ConfigFactory
 import io.github.embeddedkafka.schemaregistry.{EmbeddedKafka, EmbeddedKafkaConfig}
-import org.scalatest.words._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.{AnyFlatSpec, AnyFlatSpecLike}
 import org.scalatest.matchers.should.Matchers

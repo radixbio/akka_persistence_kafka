@@ -26,7 +26,7 @@ object AnyAvroToSerializedObject {
           // this cast should be safe, as we shouldn't have any persistent messages stored that are not
           // written by us
           val avroSerializer = otherSerializer.asInstanceOf[AvroSerializer[Any]]
-          val res = avroSerializer.encoder.encode(other)
+          val res = avroSerializer.encoder.encode(avroSerializer.schema.schema)(other).asInstanceOf[Object]
           (Some(otherSerializer.identifier), res)
           /* Do not try to hide the fact that serialization failed. This should fail noisily.
            * .recover { case exn: Exception => otherSerializer.toBinary(other.asInstanceOf[AnyRef]) }

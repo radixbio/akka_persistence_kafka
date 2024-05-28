@@ -11,88 +11,75 @@ import akka.stream.{SinkRef, SourceRef, StreamRefResolver}
 object ActorRefSerializer {
   implicit def SchemaForTypedActorRef[T]: SchemaFor[ActorRef[T]] = new SchemaFor[ActorRef[T]] {
     override def schema: Schema = SchemaBuilder.builder.stringType()
-    override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
-  }
+  }.withFieldMapper(com.sksamuel.avro4s.DefaultFieldMapper)
+
   implicit def EncoderForTypedActorRef[T]: Encoder[ActorRef[T]] = new Encoder[ActorRef[T]] {
-    override def encode(t: ActorRef[T]): AnyRef = {
+    override def encode(schema: Schema): ActorRef[T] => AnyRef = { (t: ActorRef[T]) =>
       Serialization.serializedActorPath(t.toClassic)
     }
-    override def schemaFor: SchemaFor[ActorRef[T]] = SchemaForTypedActorRef[T]
   }
   implicit def DecoderForTypedActorRef[T](implicit A: ExtendedActorSystem): Decoder[ActorRef[T]] =
     new Decoder[ActorRef[T]] {
-      override def decode(value: Any): ActorRef[T] = {
+      override def decode(schema: Schema): Any => ActorRef[T] = { (value: Any) =>
         A.provider.resolveActorRef(value.toString)
       }
-      override def schemaFor: SchemaFor[ActorRef[T]] = SchemaForTypedActorRef[T]
 
     }
 
-  implicit object SchemaForUntypedActorRef extends SchemaFor[UActorRef] {
+  implicit def SchemaForUntypedActorRef: SchemaFor[UActorRef] = new SchemaFor[UActorRef] {
     override def schema: Schema = SchemaBuilder.builder.stringType()
-    override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
+  }.withFieldMapper(com.sksamuel.avro4s.DefaultFieldMapper)
 
-  }
   implicit object EncoderForUntypedActorRef extends Encoder[UActorRef] {
-    override def encode(t: UActorRef): AnyRef =
-      Serialization.serializedActorPath(t)
+    override def encode(schema: Schema): UActorRef => AnyRef =
+      (t: UActorRef) => Serialization.serializedActorPath(t)
 
-    override def schemaFor: SchemaFor[UActorRef] = SchemaForUntypedActorRef
   }
   implicit def DecoderForUntypedActorRef(implicit A: ExtendedActorSystem): Decoder[UActorRef] = new Decoder[UActorRef] {
-    override def decode(value: Any): UActorRef = {
+    override def decode(schema: Schema): Any => UActorRef = { (value: Any) =>
       A.provider.resolveActorRef(value.toString)
     }
-    override def schemaFor: SchemaFor[UActorRef] = SchemaForUntypedActorRef
 
   }
 
   implicit def SchemaForNothingActorRef: SchemaFor[ActorRef[_]] = new SchemaFor[ActorRef[_]] {
     override def schema: Schema = SchemaBuilder.builder.stringType()
-    override def fieldMapper: com.sksamuel.avro4s.FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
-  }
+  }.withFieldMapper(com.sksamuel.avro4s.DefaultFieldMapper)
+
   implicit def EncoderForNothingActorRef: Encoder[ActorRef[_]] = new Encoder[ActorRef[_]] {
-    override def encode(t: ActorRef[_]): AnyRef = {
+    override def encode(schema: Schema): ActorRef[_] => AnyRef = { (t: ActorRef[_]) =>
       Serialization.serializedActorPath(t.toClassic)
     }
-    override def schemaFor: SchemaFor[ActorRef[_]] = SchemaForNothingActorRef
   }
 
   implicit def SchemaForSourceRef[T]: SchemaFor[SourceRef[T]] = new SchemaFor[SourceRef[T]] {
     override def schema: Schema = SchemaBuilder.builder.stringType()
-    override def fieldMapper: FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
-  }
+  }.withFieldMapper(com.sksamuel.avro4s.DefaultFieldMapper)
 
   implicit def EncoderForSourceRef[T](implicit eas: ExtendedActorSystem): Encoder[SourceRef[T]] =
     new Encoder[SourceRef[T]] {
-      override def encode(ref: SourceRef[T]): AnyRef =
-        StreamRefResolver.get(eas).toSerializationFormat(ref)
-      override def schemaFor: SchemaFor[SourceRef[T]] = SchemaForSourceRef
+      override def encode(schema: Schema): SourceRef[T] => AnyRef =
+        (ref: SourceRef[T]) => StreamRefResolver.get(eas).toSerializationFormat(ref)
 
     }
   implicit def DecoderForSourceRef[T](implicit eas: ExtendedActorSystem): Decoder[SourceRef[T]] =
     new Decoder[SourceRef[T]] {
-      override def decode(value: Any): SourceRef[T] =
-        StreamRefResolver.get(eas).resolveSourceRef(value.toString)
-      override def schemaFor: SchemaFor[SourceRef[T]] = SchemaForSourceRef
+      override def decode(schema: Schema): Any => SourceRef[T] =
+        (value: Any) => StreamRefResolver.get(eas).resolveSourceRef(value.toString)
     }
 
   implicit def SchemaForSinkRef[T]: SchemaFor[SinkRef[T]] = new SchemaFor[SinkRef[T]] {
     override def schema: Schema = SchemaBuilder.builder.stringType()
-    override def fieldMapper: FieldMapper = com.sksamuel.avro4s.DefaultFieldMapper
-  }
+  }.withFieldMapper(com.sksamuel.avro4s.DefaultFieldMapper)
 
   implicit def EncoderForSinkRef[T](implicit eas: ExtendedActorSystem): Encoder[SinkRef[T]] =
     new Encoder[SinkRef[T]] {
-      override def encode(ref: SinkRef[T]): AnyRef =
-        StreamRefResolver.get(eas).toSerializationFormat(ref)
-      override def schemaFor: SchemaFor[SinkRef[T]] = SchemaForSinkRef
-
+      override def encode(schema: Schema): SinkRef[T] => AnyRef =
+        (ref: SinkRef[T]) => StreamRefResolver.get(eas).toSerializationFormat(ref)
     }
   implicit def DecoderForSinkRef[T](implicit eas: ExtendedActorSystem): Decoder[SinkRef[T]] =
     new Decoder[SinkRef[T]] {
-      override def decode(value: Any): SinkRef[T] =
-        StreamRefResolver.get(eas).resolveSinkRef(value.toString)
-      override def schemaFor: SchemaFor[SinkRef[T]] = SchemaForSinkRef
+      override def decode(schema: Schema): Any => SinkRef[T] =
+        (value: Any) => StreamRefResolver.get(eas).resolveSinkRef(value.toString)
     }
 }

@@ -5,6 +5,7 @@ import com.radix.shared.persistence.AvroSerializer
 import java.nio.file.Paths
 import scala.meta._
 import scala.meta.contrib.XtensionExtractors
+import scala.meta.contrib._
 
 object AutoBindings {
 
@@ -102,9 +103,9 @@ object AutoBindings {
       .getOrElse(throw new Exception("No package name found"))
 
     val classes = parsedFile.collect {
-      case cls: Defn.Class                           => cls
-      case trt: Defn.Trait                           => trt
-      case obj: Defn.Object if obj.hasMod(mod"case") => obj
+      case cls: Defn.Class                            => cls
+      case trt: Defn.Trait                            => trt
+      case obj: Defn.Object if obj.hasMod(Mod.Case()) => obj
     }
 
     val serializers = classes
@@ -116,7 +117,7 @@ object AutoBindings {
 
           // ensure that the class extended is "AvroSerializer"
           _ <- Some(extension).collect {
-            case t"AvroSerializer[$_]" => ()
+            case Type.Apply(Type.Name("AvroSerializer"), _) => () // t"AvroSerializer[$_]" => ()
           }
 
           // get the list of generics of this extended class

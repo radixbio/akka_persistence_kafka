@@ -16,7 +16,7 @@ object AnySerializedObjectToAvro {
       case gr: GenericRecord =>
         val avro = ser.serializerOf(manifest).asInstanceOf[AvroSerializer[Any]]
         Try {
-          avro.decoder.decode(gr)
+          avro.decoder.decode(avro.schema.schema)(gr)
         } match {
           case Success(value)     => Some(value)
           case Failure(exception) => None

@@ -5,7 +5,7 @@ import com.radix.shared.persistence.autoserz.AutoBindings.findLocalPath
 import java.nio.file.Paths
 import scala.meta.Stat.WithMods
 import scala.meta._
-import scala.meta.contrib.XtensionExtractors
+import scala.meta.contrib._
 
 object AutoSerializers {
 
@@ -113,7 +113,6 @@ object AutoSerializers {
       val baseImports = Set(
         ImportStatement("com.radix.shared.persistence", Set("AvroSerializer")),
         ImportStatement("com.sksamuel.avro4s", Set("Decoder", "Encoder", "SchemaFor")),
-        ImportStatement("shapeless", Set("cachedImplicit")),
       )
 
       s"""package $packageName
@@ -218,9 +217,9 @@ object AutoSerializers {
   def findClassesToSerialize(parsedFile: Source): List[(Member, AutoSerz)] = {
     val autoSerzClasses = parsedFile
       .collect {
-        case cls: Defn.Class if !cls.hasMod(mod"abstract") => cls
-        case trt: Defn.Trait if trt.hasMod(mod"sealed")    => trt
-        case obj: Defn.Object if obj.hasMod(mod"case")     => obj
+        case cls: Defn.Class if !cls.hasMod(Mod.Abstract()) => cls
+        case trt: Defn.Trait if trt.hasMod(Mod.Sealed())    => trt
+        case obj: Defn.Object if obj.hasMod(Mod.Case())     => obj
       }
       .flatMap { defn =>
         defn.mods
@@ -245,7 +244,7 @@ object AutoSerializers {
 
         obj.templ.stats
           .collect {
-            case cls: Defn.Class if !cls.hasMod(mod"abstract") => cls
+            case cls: Defn.Class if !cls.hasMod(Mod.Abstract()) => cls
           }
           // If the class has its own AutoSerz annotation, use that instead of the object wide one
           .filterNot(_.mods.exists(isAutoSerzMod))
@@ -306,12 +305,22 @@ object AutoSerializers {
     }
 
     val serializer = s"class ${serializedName}Avro$eas extends AvroSerializer[$serializedFullName]"
-    lazy val schema = s"implicit val SchemaFor$serializedName: SchemaFor[$serializedFullName] = cachedImplicit"
-    lazy val encoder = s"implicit val Encoder$serializedName: Encoder[$serializedFullName] = cachedImplicit"
-    lazy val decoder = s"implicit val Decoder$serializedName: Decoder[$serializedFullName] = cachedImplicit"
+    lazy val schema =
+      s"implicit val SchemaFor$serializedName: SchemaFor[$serializedFullName] = ${serializedName}Cache.schemaFor"
+    lazy val encoder =
+      s"implicit val Encoder$serializedName: Encoder[$serializedFullName] = ${serializedName}Cache.encoder"
+    lazy val decoder =
+      s"implicit val Decoder$serializedName: Decoder[$serializedFullName] = ${serializedName}Cache.decoder"
+    lazy val cache = s"""|
+    |  object ${serializedName}Cache {
+    |    val schemaFor = SchemaFor.derived[${serializedFullName}]
+    |    val encoder = Encoder.derived[${serializedFullName}]
+    |    val decoder = Decoder.derived[${serializedFullName}]
+    |  } 
+    |""".stripMargin
 
     if (annotation.params.contains(CachedImplicits)) {
-      List(serializer, schema, encoder, decoder).mkString("", "\n  ", "\n")
+      List(serializer, schema, encoder, decoder, cache).mkString("", "\n  ", "\n")
     } else serializer + "\n"
   }
 }
