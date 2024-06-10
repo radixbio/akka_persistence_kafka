@@ -10,7 +10,7 @@ import scala.concurrent.duration._
 class KafkaJournalTest
     extends JournalSpec(
       ConfigFactory.load
-        .withValue("akka.remote.artery.canonical.port", ConfigFactory.parseString("{port: 2554}").getValue("port"))
+        .withValue("pekko.remote.artery.canonical.port", ConfigFactory.parseString("{port: 2554}").getValue("port"))
     )
     with EmbeddedKafka {
 

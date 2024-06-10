@@ -43,8 +43,8 @@ object UntypedEchoActor {
 
 class TypedActorSerializationSpec
     extends ScalaTestWithActorTestKit("""
-    |akka.actor.serializers.echo-serializer = "com.radix.shared.persistence.test.TypedEchoSerializer"
-    |akka.actor.serialization-bindings."com.radix.shared.persistence.test.TypedEchoActor$Echo" = "echo-serializer"
+    |pekko.actor.serializers.echo-serializer = "com.radix.shared.persistence.test.TypedEchoSerializer"
+    |pekko.actor.serialization-bindings."com.radix.shared.persistence.test.TypedEchoActor$Echo" = "echo-serializer"
     |""".stripMargin)
     with AnyWordSpecLike {
   "Typed ActorRefs must (de)serialize correctly" in {
@@ -72,8 +72,8 @@ class TypedActorSerializationSpec
 
 object UntypedActorSerializationSpec {
   val config: Config = ConfigFactory.parseString("""
-      |akka.actor.serializers.echo-serializer = "com.radix.shared.persistence.test.UntypedEchoSerializer"
-      |akka.actor.serialization-bindings."com.radix.shared.persistence.test.UntypedEchoActor$Echo" = "echo-serializer"
+      |pekko.actor.serializers.echo-serializer = "com.radix.shared.persistence.test.UntypedEchoSerializer"
+      |pekko.actor.serialization-bindings."com.radix.shared.persistence.test.UntypedEchoActor$Echo" = "echo-serializer"
       |""".stripMargin)
 }
 

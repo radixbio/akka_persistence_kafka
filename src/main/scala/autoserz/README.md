@@ -76,7 +76,7 @@ which is also being serialized, as it will cache the implicit serializers for th
 - `ExtendedActorSystem`: This flag should be used if the class being serialized contains an `ActorRef` or `StreamRef`
 
 ```scala
-import akka.actor.typed.ActorRef
+import org.apache.pekko.actor.typed.ActorRef
 import com.radix.shared.persistence.autoserz.{AutoSerz, CachedImplicits, ExtendedActorSystem}
 
 @AutoSerz
