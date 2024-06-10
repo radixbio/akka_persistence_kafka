@@ -126,10 +126,10 @@ object AutoBindings {
           serializedClass <- extendedClassGenerics.children.headOption
 
           // split the class name from any preceding path
-          serializedPath = serializedClass.toString().stripSuffix(".type").split("\\.").toList.map(ClassPath)
+          serializedPath = serializedClass.toString().stripSuffix(".type").split("\\.").toList.map(ClassPath.apply)
 
         } yield Serializer(
-          pkg.split("\\.").toList.map(ClassPath) ++
+          pkg.split("\\.").toList.map(ClassPath.apply) ++
             findLocalPath(cls, parsedFile) :+
             ClassPath(serializerName),
           serializedPath,
@@ -139,7 +139,7 @@ object AutoBindings {
     val serializable = classes
       .map { cls =>
         Serializable(
-          pkg.split("\\.").toList.map(ClassPath) ++
+          pkg.split("\\.").toList.map(ClassPath.apply) ++
             findLocalPath(cls, parsedFile) :+
             (if (cls.isInstanceOf[Defn.Object]) ObjectPath(cls.name.value)
              else ClassPath(cls.name.value))
