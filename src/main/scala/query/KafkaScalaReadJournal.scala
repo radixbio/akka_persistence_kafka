@@ -32,8 +32,6 @@ class KafkaScalaReadJournal(system: ExtendedActorSystem, cfg: Config)
 
   val localConfig: KafkaConfig = new KafkaConfig(cfg)
   implicit val timeout: Timeout = Timeout(5.seconds)
-  // implicit val context: ActorContext = system
-  // implicit val mat: Materializer = Materializer(system)
 
   private val consumerSettings: ConsumerSettings[String, Object] = {
     val valueDeserializer = new KafkaAvroDeserializer().asInstanceOf[Deserializer[Object]]
