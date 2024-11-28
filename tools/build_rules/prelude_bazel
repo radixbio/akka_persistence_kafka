@@ -1,7 +1,0 @@
-load("//tools:define_scala_targets_with_fmt_phase.bzl", "scala_library", "scala_binary", "scala_test")
-load("@io_bazel_rules_scala//scala:scala.bzl", "scala_doc")
-load(
-    "@io_bazel_rules_scala//scala:scala.bzl",
-    "scala_macro_library",
-    "scala_library_suite",
-)

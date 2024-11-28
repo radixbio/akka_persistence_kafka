@@ -3,17 +3,17 @@ package com.radix.shared.persistence.test
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.scaladsl.adapter.*
+import akka.actor.typed.scaladsl.adapter._
 import akka.serialization.{SerializationExtension, SerializerWithStringManifest}
 import akka.testkit.TestKit
 import com.radix.shared.persistence.AvroSerializer
+import com.radix.test.RadixSpecConfig
 import org.scalatest.wordspec.AnyWordSpecLike
-import com.radix.shared.persistence.test.RadixTestHoconConfig
 
 import java.util.UUID
 import scala.util.{Failure, Success}
 
-abstract class SerializationTest extends ScalaTestWithActorTestKit(new RadixTestHoconConfig().config) with AnyWordSpecLike {
+abstract class SerializationTest extends ScalaTestWithActorTestKit(new RadixSpecConfig().config) with AnyWordSpecLike {
   def serializeAndDeserialize[T <: AnyRef](original: T): T = {
     val serialization = SerializationExtension(system.toClassic)
     serialization.findSerializerFor(original) match {
