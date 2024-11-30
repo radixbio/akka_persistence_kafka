@@ -87,15 +87,15 @@ maven_install(
                 maven.exclusion(
                     artifact = "slf4j_reload4j",
                     group = "org.slf4j",
-                )
+                ),
             ],
             group = "io.github.embeddedkafka",
             version = "7.4.0",
         ),
         maven.artifact(
+            testonly = True,
             artifact = "pekko-persistence-tck_2.13",
             group = "org.apache.pekko",
-            testonly = True,
             version = "1.0.2",
         ),
     ],
@@ -141,6 +141,7 @@ rules_proto_toolchains()
 load("@io_bazel_rules_scala//scala:toolchains.bzl", "scala_register_toolchains")
 
 scala_register_toolchains()
+
 load(
     "@io_bazel_rules_scala//scala/scalafmt:scalafmt_repositories.bzl",
     "scalafmt_default_config",

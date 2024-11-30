@@ -4,7 +4,6 @@ import com.typesafe.config.{Config, ConfigFactory, ConfigValue, ConfigValueFacto
 import io.github.embeddedkafka.schemaregistry.EmbeddedKafkaConfig
 import akka.actor.Address
 
-
 class RadixTestHoconConfig(
   conf: => Config = ConfigFactory.load(),
   val extraSeeds: List[Address] = List.empty,

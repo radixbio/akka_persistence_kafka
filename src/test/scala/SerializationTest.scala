@@ -13,7 +13,9 @@ import com.radix.shared.persistence.test.RadixTestHoconConfig
 import java.util.UUID
 import scala.util.{Failure, Success}
 
-abstract class SerializationTest extends ScalaTestWithActorTestKit(new RadixTestHoconConfig().config) with AnyWordSpecLike {
+abstract class SerializationTest
+    extends ScalaTestWithActorTestKit(new RadixTestHoconConfig().config)
+    with AnyWordSpecLike {
   def serializeAndDeserialize[T <: AnyRef](original: T): T = {
     val serialization = SerializationExtension(system.toClassic)
     serialization.findSerializerFor(original) match {

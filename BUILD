@@ -123,21 +123,21 @@ scala_test(
 scala_library(
     name = "persistence-test-hocon-config",
     srcs = ["src/test/scala/RadixTestHoconConfig.scala"],
+    visibility = ["//visibility:public"],
     exports = [
-        "@maven//:com_typesafe_akka_akka_actor_2_13",
-        "@maven//:com_typesafe_akka_akka_actor_typed_2_13",
         "@maven//:com_typesafe_config",
         "@maven//:io_github_embeddedkafka_embedded_kafka_2_13",
         "@maven//:io_github_embeddedkafka_embedded_kafka_schema_registry_2_13",
+        "@maven//:com_typesafe_akka_akka_actor_2_13",
+        "@maven//:com_typesafe_akka_akka_actor_typed_2_13",
     ],
     deps = [
-        "@maven//:com_typesafe_akka_akka_actor_2_13",
-        "@maven//:com_typesafe_akka_akka_actor_typed_2_13",
         "@maven//:com_typesafe_config",
         "@maven//:io_github_embeddedkafka_embedded_kafka_2_13",
         "@maven//:io_github_embeddedkafka_embedded_kafka_schema_registry_2_13",
+        "@maven//:com_typesafe_akka_akka_actor_2_13",
+        "@maven//:com_typesafe_akka_akka_actor_typed_2_13",
     ],
-    visibility = ["//visibility:public"]
 )
 
 scala_test(
@@ -212,8 +212,8 @@ scala_library(
     srcs = glob(["src/test/scala/SerializationTest.scala"]),
     visibility = ["//shared/persistence:__subpackages__"],
     exports = [
-        ":persistence-test-hocon-config",
         ":persistence-lib",
+        ":persistence-test-hocon-config",
         "@maven//:com_yammer_metrics_metrics_core",
         "@maven//:org_apache_kafka_kafka_group_coordinator",
         "@maven//:org_apache_kafka_kafka_metadata",
@@ -239,8 +239,8 @@ scala_library(
         "@maven//:org_scalatest_scalatest_wordspec_3",
     ],
     deps = [
-        ":persistence-test-hocon-config",
         ":persistence-lib",
+        ":persistence-test-hocon-config",
         "@maven//:com_yammer_metrics_metrics_core",
         "@maven//:org_apache_kafka_kafka_group_coordinator",
         "@maven//:org_apache_kafka_kafka_metadata",
